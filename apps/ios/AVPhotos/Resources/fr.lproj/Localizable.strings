@@ -140,6 +140,7 @@
 "sync.hosted.status.readyEmpty" = "Hosted sync is reachable with no remote assets yet";
 "sync.queue.empty.detail" = "Select local photos in the Library tab and add them to the queue.";
 "sync.queue.empty.title" = "No pending uploads";
+"sync.queue.attempts" = "Attempts: %d";
 "sync.queue.section" = "Queue";
 "sync.queue.sync" = "Sync pending items";
 "sync.queue.syncing" = "Syncing...";

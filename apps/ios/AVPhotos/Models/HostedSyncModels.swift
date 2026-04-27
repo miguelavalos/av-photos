@@ -45,7 +45,7 @@ struct PreparedUploadResponse: Decodable {
     let assetId: String
     let uploadJobId: String?
     let uploadToken: String?
-    let uploadUrl: String
+    let uploadUrl: String?
     let storageKey: String
     let shouldUpload: Bool
     let assetAlreadyExists: Bool

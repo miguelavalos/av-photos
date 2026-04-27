@@ -6,6 +6,7 @@ enum AVPhotosAPIClientError: LocalizedError {
     case forbidden(String)
     case server(String)
     case invalidResponse
+    case invalidUploadTarget
 
     var errorDescription: String? {
         switch self {
@@ -19,6 +20,8 @@ enum AVPhotosAPIClientError: LocalizedError {
             message
         case .invalidResponse:
             "The server response could not be decoded."
+        case .invalidUploadTarget:
+            "The backend did not provide a valid upload target."
         }
     }
 }
@@ -74,11 +77,15 @@ struct AVPhotosAPIClient {
         )
     }
 
-    func uploadPreparedAsset(uploadURLPath: String, data: Data) async throws {
+    func uploadPreparedAsset(uploadURLPath: String?, data: Data) async throws {
         struct EmptyResponse: Decodable {}
 
+        guard let uploadURLPath, !uploadURLPath.isEmpty else {
+            throw AVPhotosAPIClientError.invalidUploadTarget
+        }
+
         let _: EmptyResponse = try await request(
-            path: uploadURLPath,
+            url: try resolvedURL(from: uploadURLPath),
             method: "PUT",
             requiresAuth: true,
             bodyData: data,
@@ -114,10 +121,23 @@ struct AVPhotosAPIClient {
         bodyData: Data? = nil,
         contentType: String? = nil
     ) async throws -> T {
-        guard let url = URL(string: path, relativeTo: baseURL) else {
-            throw AVPhotosAPIClientError.notConfigured
-        }
+        let url = try resolvedURL(from: path)
+        return try await request(
+            url: url,
+            method: method,
+            requiresAuth: requiresAuth,
+            bodyData: bodyData,
+            contentType: contentType
+        )
+    }
 
+    private func request<T: Decodable>(
+        url: URL,
+        method: String,
+        requiresAuth: Bool,
+        bodyData: Data? = nil,
+        contentType: String? = nil
+    ) async throws -> T {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.httpBody = bodyData
@@ -177,5 +197,17 @@ struct AVPhotosAPIClient {
             bodyData: data,
             contentType: "application/json"
         )
+    }
+
+    private func resolvedURL(from path: String) throws -> URL {
+        if let absoluteURL = URL(string: path), absoluteURL.scheme != nil {
+            return absoluteURL
+        }
+
+        guard let relativeURL = URL(string: path, relativeTo: baseURL) else {
+            throw AVPhotosAPIClientError.notConfigured
+        }
+
+        return relativeURL
     }
 }

@@ -140,6 +140,7 @@
 "sync.hosted.status.readyEmpty" = "El sync hosted responde pero aún no hay assets remotos";
 "sync.queue.empty.detail" = "Selecciona fotos locales en la pestaña Library y añádelas a la cola.";
 "sync.queue.empty.title" = "No hay uploads pendientes";
+"sync.queue.attempts" = "Intentos: %d";
 "sync.queue.section" = "Cola";
 "sync.queue.sync" = "Sincronizar pendientes";
 "sync.queue.syncing" = "Sincronizando...";

@@ -12,6 +12,7 @@ struct LocalPhotoUploadPayload {
 enum PhotoLibraryServiceError: LocalizedError {
     case assetNotFound
     case imageDataUnavailable
+    case assetResourceUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -19,6 +20,8 @@ enum PhotoLibraryServiceError: LocalizedError {
             "The local photo asset could not be found."
         case .imageDataUnavailable:
             "The selected asset did not return image data."
+        case .assetResourceUnavailable:
+            "The selected asset did not expose an original photo resource."
         }
     }
 }
@@ -55,7 +58,7 @@ struct PhotoLibraryService {
         }
 
         let filename = PHAssetResource.assetResources(for: asset).first?.originalFilename ?? "Image"
-        let data = try await requestImageData(for: asset)
+        let data = try await requestOriginalImageData(for: asset)
 
         return LocalPhotoUploadPayload(
             asset: LocalPhotoAsset(
@@ -71,20 +74,33 @@ struct PhotoLibraryService {
         )
     }
 
-    private func requestImageData(for asset: PHAsset) async throws -> Data {
-        try await withCheckedThrowingContinuation { continuation in
-            let options = PHImageRequestOptions()
-            options.isSynchronous = false
-            options.deliveryMode = .highQualityFormat
+    private func requestOriginalImageData(for asset: PHAsset) async throws -> Data {
+        guard let resource = PHAssetResource.assetResources(for: asset)
+            .first(where: { $0.type == .photo || $0.type == .fullSizePhoto })
+        else {
+            throw PhotoLibraryServiceError.assetResourceUnavailable
+        }
+
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
+            let options = PHAssetResourceRequestOptions()
             options.isNetworkAccessAllowed = true
 
-            PHImageManager.default().requestImageDataAndOrientation(for: asset, options: options) { data, _, _, _ in
-                guard let data else {
+            var buffer = Data()
+
+            PHAssetResourceManager.default().requestData(for: resource, options: options) { chunk in
+                buffer.append(chunk)
+            } completionHandler: { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard !buffer.isEmpty else {
                     continuation.resume(throwing: PhotoLibraryServiceError.imageDataUnavailable)
                     return
                 }
 
-                continuation.resume(returning: data)
+                continuation.resume(returning: buffer)
             }
         }
     }

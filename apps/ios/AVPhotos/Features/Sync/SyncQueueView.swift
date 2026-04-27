@@ -23,6 +23,12 @@ struct SyncQueueView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
 
+                                if let attemptCount = item.attemptCount, attemptCount > 0 {
+                                    Text(L10n.string("sync.queue.attempts", attemptCount))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
                                 if let lastMessage = item.lastMessage {
                                     Text(lastMessage)
                                         .font(.caption)

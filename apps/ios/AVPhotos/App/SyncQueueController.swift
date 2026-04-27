@@ -49,7 +49,10 @@ final class SyncQueueController: ObservableObject {
                     createdAt: .now,
                     status: .pending,
                     lastMessage: nil,
-                    remoteAssetId: nil
+                    remoteAssetId: nil,
+                    attemptCount: 0,
+                    lastAttemptAt: nil,
+                    completedAt: nil
                 )
             )
         }
@@ -78,6 +81,9 @@ final class SyncQueueController: ObservableObject {
             }
 
             do {
+                items[index].attemptCount = (items[index].attemptCount ?? 0) + 1
+                items[index].lastAttemptAt = .now
+                items[index].completedAt = nil
                 items[index].status = .preparing
                 items[index].lastMessage = "Loading local asset metadata"
 
@@ -108,11 +114,16 @@ final class SyncQueueController: ObservableObject {
                         deviceID: deviceID
                     )
                 } else {
-                    items[index].lastMessage = "Remote asset already exists"
+                    items[index].lastMessage = prepare.assetAlreadyExists
+                        ? "Remote asset already exists"
+                        : "Upload was skipped by the backend"
                 }
 
                 items[index].status = .completed
-                items[index].lastMessage = "Sync completed"
+                if prepare.shouldUpload {
+                    items[index].lastMessage = "Sync completed"
+                }
+                items[index].completedAt = .now
             } catch {
                 items[index].status = .failed
                 items[index].lastMessage = error.localizedDescription

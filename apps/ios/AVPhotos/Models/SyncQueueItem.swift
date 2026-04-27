@@ -17,4 +17,7 @@ struct SyncQueueItem: Identifiable, Codable, Equatable {
     var status: SyncQueueItemStatus
     var lastMessage: String?
     var remoteAssetId: String?
+    var attemptCount: Int?
+    var lastAttemptAt: Date?
+    var completedAt: Date?
 }
