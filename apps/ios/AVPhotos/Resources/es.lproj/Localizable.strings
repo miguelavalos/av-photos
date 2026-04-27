@@ -135,6 +135,9 @@
 "sync.hosted.delete.confirm.message" = "¿Borrar %@ del storage hosted remoto? El asset local se mantiene en el dispositivo.";
 "sync.hosted.delete.confirm.title" = "Borrar asset remoto";
 "sync.hosted.deleting" = "Borrando asset remoto";
+"sync.hosted.bulkDelete.action" = "Borrar seleccionados";
+"sync.hosted.bulkDelete.confirm.message" = "¿Borrar %d assets remotos seleccionados? Los assets locales se mantienen en el dispositivo.";
+"sync.hosted.bulkDelete.confirm.title" = "Borrar assets seleccionados";
 "sync.hosted.gallery.more" = "Más assets remotos";
 "sync.hosted.gallery.open" = "Abrir galería remota (%d)";
 "sync.hosted.gallery.title" = "Galería remota";
@@ -154,6 +157,9 @@
 "sync.hosted.status.notConfigured" = "El sync hosted no está configurado";
 "sync.hosted.status.readyCount" = "El sync hosted responde con %d assets remotos";
 "sync.hosted.status.readyEmpty" = "El sync hosted responde pero aún no hay assets remotos";
+"sync.hosted.select" = "Seleccionar";
+"sync.hosted.selectAll" = "Seleccionar todo";
+"sync.hosted.selectedCount" = "%d seleccionados";
 "sync.queue.empty.detail" = "Selecciona fotos locales en la pestaña Library y añádelas a la cola.";
 "sync.queue.empty.title" = "No hay uploads pendientes";
 "sync.queue.attempts" = "Intentos: %d";

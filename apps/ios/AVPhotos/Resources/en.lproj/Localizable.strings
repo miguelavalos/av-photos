@@ -135,6 +135,9 @@
 "sync.hosted.delete.confirm.message" = "Delete %@ from remote hosted storage? This keeps the local library asset on device.";
 "sync.hosted.delete.confirm.title" = "Delete remote asset";
 "sync.hosted.deleting" = "Deleting remote asset";
+"sync.hosted.bulkDelete.action" = "Delete selected";
+"sync.hosted.bulkDelete.confirm.message" = "Delete %d selected remote assets? This keeps the local library assets on device.";
+"sync.hosted.bulkDelete.confirm.title" = "Delete selected assets";
 "sync.hosted.gallery.more" = "More remote assets";
 "sync.hosted.gallery.open" = "Open remote gallery (%d)";
 "sync.hosted.gallery.title" = "Remote gallery";
@@ -154,6 +157,9 @@
 "sync.hosted.status.notConfigured" = "Hosted sync is not configured";
 "sync.hosted.status.readyCount" = "Hosted sync is reachable with %d remote assets";
 "sync.hosted.status.readyEmpty" = "Hosted sync is reachable with no remote assets yet";
+"sync.hosted.select" = "Select";
+"sync.hosted.selectAll" = "Select all";
+"sync.hosted.selectedCount" = "%d selected";
 "sync.queue.empty.detail" = "Select local photos in the Library tab and add them to the queue.";
 "sync.queue.empty.title" = "No pending uploads";
 "sync.queue.attempts" = "Attempts: %d";

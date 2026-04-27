@@ -5,7 +5,10 @@ struct HostedGalleryView: View {
     @EnvironmentObject private var hostedSyncController: HostedSyncController
 
     @State private var assetPendingDeletion: HostedPhotoAsset?
+    @State private var assetsPendingBulkDeletion: [HostedPhotoAsset] = []
     @State private var selectedAsset: HostedPhotoAsset?
+    @State private var selectionModeEnabled = false
+    @State private var selectedAssetIDs = Set<String>()
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -26,13 +29,30 @@ struct HostedGalleryView: View {
                             description: Text(L10n.string("sync.hosted.gallery.empty.detail"))
                         )
                     } else {
+                        if selectionModeEnabled {
+                            selectionSummary
+                        }
+
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(hostedSyncController.assets) { asset in
                                 Button {
-                                    selectedAsset = asset
+                                    if selectionModeEnabled {
+                                        toggleSelection(for: asset)
+                                    } else {
+                                        selectedAsset = asset
+                                    }
                                 } label: {
                                     VStack(alignment: .leading, spacing: 8) {
-                                        HostedAssetThumbnailView(asset: asset, size: 112, cornerRadius: 18)
+                                        ZStack(alignment: .topTrailing) {
+                                            HostedAssetThumbnailView(asset: asset, size: 112, cornerRadius: 18)
+
+                                            if selectionModeEnabled {
+                                                Image(systemName: selectedAssetIDs.contains(asset.assetId) ? "checkmark.circle.fill" : "circle")
+                                                    .font(.title3)
+                                                    .foregroundStyle(selectedAssetIDs.contains(asset.assetId) ? AVPhotosTheme.highlight : .white.opacity(0.8))
+                                                    .padding(6)
+                                            }
+                                        }
 
                                         Text(asset.originalFilename)
                                             .font(.caption.weight(.medium))
@@ -91,7 +111,63 @@ struct HostedGalleryView: View {
             } message: { asset in
                 Text(L10n.string("sync.hosted.delete.confirm.message", asset.originalFilename))
             }
+            .alert(
+                L10n.string("sync.hosted.bulkDelete.confirm.title"),
+                isPresented: bulkDeleteAlertPresentedBinding
+            ) {
+                Button(L10n.string("action.cancel"), role: .cancel) {
+                    assetsPendingBulkDeletion = []
+                }
+                Button(L10n.string("sync.hosted.bulkDelete.action"), role: .destructive) {
+                    Task {
+                        await deleteSelectedAssets()
+                    }
+                }
+            } message: {
+                Text(L10n.string("sync.hosted.bulkDelete.confirm.message", assetsPendingBulkDeletion.count))
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if selectionModeEnabled {
+                        Button(L10n.string("action.done")) {
+                            selectionModeEnabled = false
+                            selectedAssetIDs.removeAll()
+                        }
+                    } else if !hostedSyncController.assets.isEmpty {
+                        Button(L10n.string("sync.hosted.select")) {
+                            selectionModeEnabled = true
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    private var selectionSummary: some View {
+        HStack(spacing: 12) {
+            Text(L10n.string("sync.hosted.selectedCount", selectedAssetIDs.count))
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(AVPhotosTheme.textPrimary)
+
+            Spacer()
+
+            Button(L10n.string("sync.hosted.selectAll")) {
+                selectedAssetIDs = Set(hostedSyncController.assets.map(\.assetId))
+            }
+            .buttonStyle(.bordered)
+
+            Button(L10n.string("sync.hosted.bulkDelete.action")) {
+                assetsPendingBulkDeletion = hostedSyncController.assets.filter { selectedAssetIDs.contains($0.assetId) }
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(selectedAssetIDs.isEmpty)
+        }
+        .padding(16)
+        .background(AVPhotosTheme.cardSurface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(AVPhotosTheme.borderSubtle.opacity(0.45), lineWidth: 1)
+        )
     }
 
     private var hostedStatusCard: some View {
@@ -165,6 +241,44 @@ struct HostedGalleryView: View {
                 }
             }
         )
+    }
+
+    private var bulkDeleteAlertPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { assetsPendingBulkDeletion.isEmpty == false },
+            set: { isPresented in
+                if !isPresented {
+                    assetsPendingBulkDeletion = []
+                }
+            }
+        )
+    }
+
+    private func toggleSelection(for asset: HostedPhotoAsset) {
+        if selectedAssetIDs.contains(asset.assetId) {
+            selectedAssetIDs.remove(asset.assetId)
+        } else {
+            selectedAssetIDs.insert(asset.assetId)
+        }
+    }
+
+    private func deleteSelectedAssets() async {
+        let assetsToDelete = assetsPendingBulkDeletion
+        assetsPendingBulkDeletion = []
+
+        for asset in assetsToDelete {
+            do {
+                try await hostedSyncController.deleteAsset(asset)
+            } catch {
+                await hostedSyncController.refresh()
+            }
+        }
+
+        selectedAssetIDs.subtract(assetsToDelete.map(\.assetId))
+
+        if hostedSyncController.assets.isEmpty {
+            selectionModeEnabled = false
+        }
     }
 }
 
