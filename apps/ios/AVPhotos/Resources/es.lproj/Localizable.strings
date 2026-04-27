@@ -148,7 +148,17 @@
 "sync.hosted.gallery.detail.ready" = "Explora tu librería remota de AV Photos y revisa lo que ya está guardado en el sync hosted.";
 "sync.hosted.gallery.empty.detail" = "Los assets remotos aparecerán aquí cuando sincronices fotos locales seleccionadas.";
 "sync.hosted.gallery.empty.title" = "Aún no hay assets remotos";
+"sync.hosted.filter" = "Filtrar";
+"sync.hosted.filter.all" = "Todos";
+"sync.hosted.filter.deleted" = "Borrados";
+"sync.hosted.filter.uploaded" = "Subidos";
+"sync.hosted.filteredCount" = "%d visibles";
 "sync.hosted.refresh" = "Actualizar estado hosted";
+"sync.hosted.sort" = "Ordenar";
+"sync.hosted.sort.filename" = "Nombre";
+"sync.hosted.sort.largest" = "Más grandes";
+"sync.hosted.sort.newest" = "Más recientes";
+"sync.hosted.sort.oldest" = "Más antiguos";
 "sync.hosted.section" = "Estado hosted";
 "sync.hosted.status.authRequired" = "El sync hosted necesita sesión iniciada";
 "sync.hosted.status.checking" = "Comprobando sync hosted";

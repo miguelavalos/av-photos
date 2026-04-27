@@ -2,6 +2,23 @@ import SwiftUI
 import UIKit
 
 struct HostedGalleryView: View {
+    private enum SortMode: String, CaseIterable, Identifiable {
+        case newest
+        case oldest
+        case filename
+        case largest
+
+        var id: String { rawValue }
+    }
+
+    private enum FilterMode: String, CaseIterable, Identifiable {
+        case all
+        case uploaded
+        case deleted
+
+        var id: String { rawValue }
+    }
+
     @EnvironmentObject private var hostedSyncController: HostedSyncController
 
     @State private var assetPendingDeletion: HostedPhotoAsset?
@@ -9,6 +26,8 @@ struct HostedGalleryView: View {
     @State private var selectedAsset: HostedPhotoAsset?
     @State private var selectionModeEnabled = false
     @State private var selectedAssetIDs = Set<String>()
+    @State private var sortMode: SortMode = .newest
+    @State private var filterMode: FilterMode = .all
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -29,12 +48,14 @@ struct HostedGalleryView: View {
                             description: Text(L10n.string("sync.hosted.gallery.empty.detail"))
                         )
                     } else {
+                        controlsBar
+
                         if selectionModeEnabled {
                             selectionSummary
                         }
 
                         LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(hostedSyncController.assets) { asset in
+                            ForEach(displayedAssets) { asset in
                                 Button {
                                     if selectionModeEnabled {
                                         toggleSelection(for: asset)
@@ -79,7 +100,7 @@ struct HostedGalleryView: View {
             }
             .sheet(item: $selectedAsset) { asset in
                 HostedGalleryDetailSheet(
-                    assets: hostedSyncController.assets,
+                    assets: displayedAssets,
                     selectedAsset: asset,
                     onSelect: { selectedAsset = $0 },
                     onDelete: { assetPendingDeletion = $0 }
@@ -133,13 +154,55 @@ struct HostedGalleryView: View {
                             selectionModeEnabled = false
                             selectedAssetIDs.removeAll()
                         }
-                    } else if !hostedSyncController.assets.isEmpty {
+                    } else if !displayedAssets.isEmpty {
                         Button(L10n.string("sync.hosted.select")) {
                             selectionModeEnabled = true
                         }
                     }
                 }
             }
+        }
+    }
+
+    private var controlsBar: some View {
+        HStack(spacing: 12) {
+            Menu {
+                ForEach(SortMode.allCases) { mode in
+                    Button {
+                        sortMode = mode
+                    } label: {
+                        Label(
+                            L10n.string(sortLabelKey(for: mode)),
+                            systemImage: sortMode == mode ? "checkmark" : "arrow.up.arrow.down"
+                        )
+                    }
+                }
+            } label: {
+                Label(L10n.string("sync.hosted.sort"), systemImage: "arrow.up.arrow.down")
+            }
+            .buttonStyle(.bordered)
+
+            Menu {
+                ForEach(FilterMode.allCases) { mode in
+                    Button {
+                        filterMode = mode
+                    } label: {
+                        Label(
+                            L10n.string(filterLabelKey(for: mode)),
+                            systemImage: filterMode == mode ? "checkmark" : "line.3.horizontal.decrease.circle"
+                        )
+                    }
+                }
+            } label: {
+                Label(L10n.string("sync.hosted.filter"), systemImage: "line.3.horizontal.decrease.circle")
+            }
+            .buttonStyle(.bordered)
+
+            Spacer()
+
+            Text(L10n.string("sync.hosted.filteredCount", displayedAssets.count))
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -152,12 +215,12 @@ struct HostedGalleryView: View {
             Spacer()
 
             Button(L10n.string("sync.hosted.selectAll")) {
-                selectedAssetIDs = Set(hostedSyncController.assets.map(\.assetId))
+                selectedAssetIDs = Set(displayedAssets.map(\.assetId))
             }
             .buttonStyle(.bordered)
 
             Button(L10n.string("sync.hosted.bulkDelete.action")) {
-                assetsPendingBulkDeletion = hostedSyncController.assets.filter { selectedAssetIDs.contains($0.assetId) }
+                assetsPendingBulkDeletion = displayedAssets.filter { selectedAssetIDs.contains($0.assetId) }
             }
             .buttonStyle(.borderedProminent)
             .disabled(selectedAssetIDs.isEmpty)
@@ -254,6 +317,32 @@ struct HostedGalleryView: View {
         )
     }
 
+    private var displayedAssets: [HostedPhotoAsset] {
+        let filtered = hostedSyncController.assets.filter { asset in
+            switch filterMode {
+            case .all:
+                true
+            case .uploaded:
+                asset.syncStatus == "ready"
+            case .deleted:
+                asset.syncStatus == "deleted"
+            }
+        }
+
+        return filtered.sorted { lhs, rhs in
+            switch sortMode {
+            case .newest:
+                comparisonDate(for: lhs) > comparisonDate(for: rhs)
+            case .oldest:
+                comparisonDate(for: lhs) < comparisonDate(for: rhs)
+            case .filename:
+                lhs.originalFilename.localizedCaseInsensitiveCompare(rhs.originalFilename) == .orderedAscending
+            case .largest:
+                lhs.byteSize > rhs.byteSize
+            }
+        }
+    }
+
     private func toggleSelection(for asset: HostedPhotoAsset) {
         if selectedAssetIDs.contains(asset.assetId) {
             selectedAssetIDs.remove(asset.assetId)
@@ -278,6 +367,41 @@ struct HostedGalleryView: View {
 
         if hostedSyncController.assets.isEmpty {
             selectionModeEnabled = false
+        }
+    }
+
+    private func comparisonDate(for asset: HostedPhotoAsset) -> Date {
+        let formatter = ISO8601DateFormatter()
+        if let captureTakenAt = asset.captureTakenAt, let captureDate = formatter.date(from: captureTakenAt) {
+            return captureDate
+        }
+        if let updatedDate = formatter.date(from: asset.updatedAt) {
+            return updatedDate
+        }
+        return .distantPast
+    }
+
+    private func sortLabelKey(for mode: SortMode) -> String {
+        switch mode {
+        case .newest:
+            "sync.hosted.sort.newest"
+        case .oldest:
+            "sync.hosted.sort.oldest"
+        case .filename:
+            "sync.hosted.sort.filename"
+        case .largest:
+            "sync.hosted.sort.largest"
+        }
+    }
+
+    private func filterLabelKey(for mode: FilterMode) -> String {
+        switch mode {
+        case .all:
+            "sync.hosted.filter.all"
+        case .uploaded:
+            "sync.hosted.filter.uploaded"
+        case .deleted:
+            "sync.hosted.filter.deleted"
         }
     }
 }
