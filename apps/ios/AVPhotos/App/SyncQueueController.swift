@@ -67,7 +67,13 @@ final class SyncQueueController: ObservableObject {
             return
         }
 
-        let client = AVPhotosAPIClient(baseURL: baseURL, authToken: AppConfig.authToken)
+        let client = AVPhotosAPIClient(
+            baseURL: baseURL,
+            authToken: AppConfig.authToken,
+            authTokenProvider: {
+                try await SharedAccountService.getToken()
+            }
+        )
 
         isSyncing = true
         defer {

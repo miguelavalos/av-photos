@@ -26,18 +26,21 @@ enum AVPhotosAPIClientError: LocalizedError {
     }
 }
 
-struct AVPhotosAPIClient {
+struct AVPhotosAPIClient: Sendable {
     let baseURL: URL
     let authToken: String?
+    let authTokenProvider: (@Sendable () async throws -> String?)?
     let session: URLSession
 
     init(
         baseURL: URL = AppConfig.avAppsAPIBaseURL ?? URL(string: "http://127.0.0.1")!,
         authToken: String? = AppConfig.authToken,
+        authTokenProvider: (@Sendable () async throws -> String?)? = nil,
         session: URLSession = .shared
     ) {
         self.baseURL = baseURL
         self.authToken = authToken
+        self.authTokenProvider = authTokenProvider
         self.session = session
     }
 
@@ -143,11 +146,11 @@ struct AVPhotosAPIClient {
         request.httpBody = bodyData
 
         if requiresAuth {
-            guard let authToken, !authToken.isEmpty else {
+            guard let resolvedAuthToken = try await resolvedAuthToken(), !resolvedAuthToken.isEmpty else {
                 throw AVPhotosAPIClientError.authRequired
             }
 
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+            request.setValue("Bearer \(resolvedAuthToken)", forHTTPHeaderField: "Authorization")
         }
 
         if let contentType {
@@ -209,5 +212,13 @@ struct AVPhotosAPIClient {
         }
 
         return relativeURL
+    }
+
+    private func resolvedAuthToken() async throws -> String? {
+        if let authToken, !authToken.isEmpty {
+            return authToken
+        }
+
+        return try await authTokenProvider?()
     }
 }

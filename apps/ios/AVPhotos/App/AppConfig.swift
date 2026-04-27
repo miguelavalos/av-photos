@@ -1,8 +1,13 @@
+import ClerkKit
 import Foundation
 
 enum AppConfig {
     private static let selfHostedBaseURLKey = "avphotos.selfHosted.baseURL"
     private static let selfHostedAuthTokenKey = "avphotos.selfHosted.authToken"
+
+    static var avAppsAccountKey: String {
+        stringValue(for: "CLERK_PUBLISHABLE_KEY")
+    }
 
     static var avAppsAPIBaseURL: URL? {
         if let overrideURL = nonEmptyOverrideValue(for: selfHostedBaseURLKey) {
@@ -64,6 +69,19 @@ enum AppConfig {
         authToken != nil
     }
 
+    static var isAVAppsAccountAvailable: Bool {
+        !avAppsAccountKey.isEmpty
+    }
+
+    @MainActor
+    static func configureAVAppsAccountIfPossible() {
+        guard isAVAppsAccountAvailable else {
+            return
+        }
+
+        Clerk.configure(publishableKey: avAppsAccountKey)
+    }
+
     static func saveSelfHostedConfiguration(baseURLString: String, authToken: String?) {
         let trimmedBaseURL = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
         UserDefaults.standard.set(trimmedBaseURL, forKey: selfHostedBaseURLKey)
@@ -92,6 +110,10 @@ enum AppConfig {
         guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else { return nil }
         guard url.host != nil else { return nil }
         return url
+    }
+
+    private static func stringValue(for key: String) -> String {
+        nonEmptyStringValue(for: key) ?? ""
     }
 
     private static func nonEmptyStringValue(for key: String) -> String? {

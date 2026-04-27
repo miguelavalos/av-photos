@@ -11,11 +11,12 @@ This app scaffold establishes:
 - photo-library permission flow
 - product shell for library, sync queue, and account tabs
 - onboarding flow with continue or skip
+- real AV Apps account wiring via Clerk
 - profile flow with language and theme preferences
 - hosted backend reachability check
-- authenticated remote asset listing when a local auth token is configured
+- authenticated remote asset listing using either a self-hosted token override or the signed-in account session
 
-Hosted upload, account auth, and real sync integration are still follow-up work.
+Hosted upload and end-to-end real sync validation are still follow-up work.
 
 ## Local setup
 
@@ -27,7 +28,6 @@ Hosted upload, account auth, and real sync integration are still follow-up work.
 
 ## Planned next work
 
-- replace the local placeholder auth flow with real account/access state
 - connect `prepare-upload`, upload, and `commit-upload`
-- persist local queue state
-- render remote hosted assets
+- validate end-to-end hosted sync with a real backend
+- refine account entitlements and Pro gating

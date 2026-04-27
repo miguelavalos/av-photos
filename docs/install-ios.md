@@ -7,7 +7,7 @@ This guide covers the current local scaffold for `AV Photos` on iOS.
 1. Xcode 16 or later
 2. `xcodegen` installed locally
 3. `infisical` CLI available locally
-4. A local `Config/Local.xcconfig` generated from Infisical
+4. A local `Config/Local.xcconfig` generated from Infisical, including `CLERK_PUBLISHABLE_KEY`
 
 ## Setup
 
@@ -40,10 +40,10 @@ The current app scaffold includes:
 - library, sync, and profile tabs
 - local client config pattern
 - av-radio-aligned onboarding, continue-or-skip, language, and theme flows
+- real AV Apps account sign-in via Clerk
 - hosted backend reachability check
-- authenticated remote asset listing when a local auth token is configured
+- authenticated remote asset listing using the signed-in account session or a self-hosted token override
 
 It does not yet include:
 
-- real account auth
 - hosted upload integration

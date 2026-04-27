@@ -1,3 +1,5 @@
+"account.displayName.listener" = "Fototeca";
+"account.error.unavailable" = "AV Apps Account todavía no está disponible en esta build.";
 "auth.alert.close" = "Cerrar";
 "auth.alert.continueFailed.title" = "No se pudo continuar";
 "auth.cta.continue" = "Configurar sync";

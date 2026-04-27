@@ -10,7 +10,6 @@ struct PhotosAccountUser: Equatable {
     let id: String
     let displayName: String
     let emailAddress: String?
-    let providerLabel: String
 
     var initials: String {
         let pieces = displayName.split(separator: " ")
@@ -24,34 +23,23 @@ final class AccessController: ObservableObject {
     @Published private(set) var accessMode: AccessMode
     @Published private(set) var accountUser: PhotosAccountUser?
 
+    let accountService: AVAppsAccountService
+
     private let userDefaults: UserDefaults
     private let onboardingPromptKey = "avphotos.guestOnboarding.lastPromptAt"
-    private let accountIDKey = "avphotos.account.id"
-    private let accountNameKey = "avphotos.account.name"
-    private let accountEmailKey = "avphotos.account.email"
-    private let accountProviderKey = "avphotos.account.provider"
 
-    init(userDefaults: UserDefaults = .standard) {
+    init(
+        accountService: AVAppsAccountService = SharedAccountService.instance,
+        userDefaults: UserDefaults = .standard
+    ) {
+        self.accountService = accountService
         self.userDefaults = userDefaults
-
-        if let userID = userDefaults.string(forKey: accountIDKey),
-           let displayName = userDefaults.string(forKey: accountNameKey),
-           let providerLabel = userDefaults.string(forKey: accountProviderKey) {
-            self.accountUser = PhotosAccountUser(
-                id: userID,
-                displayName: displayName,
-                emailAddress: userDefaults.string(forKey: accountEmailKey),
-                providerLabel: providerLabel
-            )
-            self.accessMode = .signedInFree
-        } else {
-            self.accountUser = nil
-            self.accessMode = .guest
-        }
+        self.accountUser = accountService.currentUser
+        self.accessMode = accountService.currentUser == nil ? .guest : .signedInFree
     }
 
     var accountIsAvailable: Bool {
-        true
+        accountService.isAvailable
     }
 
     var hasEverSeenGuestOnboarding: Bool {
@@ -68,9 +56,8 @@ final class AccessController: ObservableObject {
     }
 
     func syncFromAccountProvider() async {
-        if accountUser == nil {
-            accessMode = .guest
-        }
+        accountUser = accountService.currentUser
+        accessMode = accountUser == nil ? .guest : .signedInFree
     }
 
     func markGuestOnboardingPromptShown() {
@@ -83,48 +70,19 @@ final class AccessController: ObservableObject {
     }
 
     func signInWithApple() async throws {
-        try await signIn(
-            providerLabel: "Apple",
-            displayName: "AV Photos User",
-            emailAddress: "photos-user@example.com"
-        )
+        try await accountService.signInWithApple()
+        markGuestOnboardingPromptShown()
+        await syncFromAccountProvider()
     }
 
     func signInWithGoogle() async throws {
-        try await signIn(
-            providerLabel: "Google",
-            displayName: "AV Photos User",
-            emailAddress: "photos-user@example.com"
-        )
+        try await accountService.signInWithGoogle()
+        markGuestOnboardingPromptShown()
+        await syncFromAccountProvider()
     }
 
     func signOut() async {
-        userDefaults.removeObject(forKey: accountIDKey)
-        userDefaults.removeObject(forKey: accountNameKey)
-        userDefaults.removeObject(forKey: accountEmailKey)
-        userDefaults.removeObject(forKey: accountProviderKey)
-        accountUser = nil
-        accessMode = .guest
-    }
-
-    private func signIn(
-        providerLabel: String,
-        displayName: String,
-        emailAddress: String?
-    ) async throws {
-        let userID = UUID().uuidString.lowercased()
-        userDefaults.set(userID, forKey: accountIDKey)
-        userDefaults.set(displayName, forKey: accountNameKey)
-        userDefaults.set(emailAddress, forKey: accountEmailKey)
-        userDefaults.set(providerLabel, forKey: accountProviderKey)
-        markGuestOnboardingPromptShown()
-
-        accountUser = PhotosAccountUser(
-            id: userID,
-            displayName: displayName,
-            emailAddress: emailAddress,
-            providerLabel: providerLabel
-        )
-        accessMode = .signedInFree
+        try? await accountService.signOut()
+        await syncFromAccountProvider()
     }
 }

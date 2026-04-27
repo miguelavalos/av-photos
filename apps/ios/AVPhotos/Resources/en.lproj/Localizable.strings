@@ -1,3 +1,5 @@
+"account.displayName.listener" = "Photo library";
+"account.error.unavailable" = "AV Apps Account isn't available in this build yet.";
 "auth.alert.close" = "Close";
 "auth.alert.continueFailed.title" = "Could not continue";
 "auth.cta.continue" = "Set up sync";

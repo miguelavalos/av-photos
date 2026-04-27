@@ -32,7 +32,7 @@ final class HostedSyncController: ObservableObject {
     }
 
     func probeConnection(baseURL: URL, authToken: String?) async -> ProbeResult {
-        let client = AVPhotosAPIClient(baseURL: baseURL, authToken: authToken)
+        let client = makeClient(baseURL: baseURL, authToken: authToken)
 
         do {
             _ = try await client.fetchHealth()
@@ -71,6 +71,16 @@ final class HostedSyncController: ObservableObject {
                 lastRefreshedAt: nil
             )
         }
+    }
+
+    private func makeClient(baseURL: URL, authToken: String?) -> AVPhotosAPIClient {
+        AVPhotosAPIClient(
+            baseURL: baseURL,
+            authToken: authToken,
+            authTokenProvider: {
+                try await SharedAccountService.getToken()
+            }
+        )
     }
 }
 

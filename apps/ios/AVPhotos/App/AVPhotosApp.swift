@@ -2,6 +2,10 @@ import SwiftUI
 
 @main
 struct AVPhotosApp: App {
+    init() {
+        AppConfig.configureAVAppsAccountIfPossible()
+    }
+
     @StateObject private var permissionController = PhotoPermissionController()
     @StateObject private var hostedSyncController = HostedSyncController()
     @StateObject private var localLibraryController = LocalLibraryController()
