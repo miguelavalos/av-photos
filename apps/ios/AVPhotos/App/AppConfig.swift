@@ -111,6 +111,9 @@ enum AppConfig {
         }
 
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.hasPrefix("$("), trimmed.hasSuffix(")") {
+            return nil
+        }
         return trimmed.isEmpty ? nil : trimmed
     }
 
