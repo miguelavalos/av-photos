@@ -135,6 +135,9 @@
 "sync.hosted.delete.confirm.message" = "Delete %@ from remote hosted storage? This keeps the local library asset on device.";
 "sync.hosted.delete.confirm.title" = "Delete remote asset";
 "sync.hosted.deleting" = "Deleting remote asset";
+"sync.hosted.gallery.more" = "More remote assets";
+"sync.hosted.gallery.open" = "Open remote gallery (%d)";
+"sync.hosted.gallery.title" = "Remote gallery";
 "sync.hosted.detail.authRequired" = "Sign in with your avalsys account or configure a self-hosted backend token before calling authenticated sync endpoints.";
 "sync.hosted.detail.checking" = "The app is checking backend reachability and remote asset access.";
 "sync.hosted.detail.notConfigured" = "Set AVPHOTOS_AVAPPS_API_BASE_URL in your local config to point the app at a hosted or self-hosted backend.";
@@ -172,6 +175,7 @@
 "sync.queue.summary.title" = "Queue overview";
 "sync.queue.sync" = "Sync pending items";
 "sync.queue.syncing" = "Syncing...";
+"action.done" = "Done";
 "time.now" = "gerade eben";
 "tab.library" = "Library";
 "tab.profile" = "Profile";

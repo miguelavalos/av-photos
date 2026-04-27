@@ -5,6 +5,7 @@ struct SyncQueueView: View {
     @EnvironmentObject private var hostedSyncController: HostedSyncController
     @EnvironmentObject private var syncQueueController: SyncQueueController
     @State private var assetPendingDeletion: HostedPhotoAsset?
+    @State private var hostedAssetDetail: HostedPhotoAsset?
 
     var body: some View {
         NavigationStack {
@@ -70,6 +71,13 @@ struct SyncQueueView: View {
                             }
                         }
                         .buttonStyle(.borderedProminent)
+
+                        if !hostedSyncController.assets.isEmpty {
+                            Button(L10n.string("sync.hosted.gallery.open", hostedSyncController.assets.count)) {
+                                hostedAssetDetail = hostedSyncController.assets.first
+                            }
+                            .buttonStyle(.bordered)
+                        }
                     }
                     .padding(.vertical, 6)
                 }
@@ -165,6 +173,17 @@ struct SyncQueueView: View {
                 }
             } message: { asset in
                 Text(L10n.string("sync.hosted.delete.confirm.message", asset.originalFilename))
+            }
+            .sheet(item: $hostedAssetDetail) { asset in
+                HostedGallerySheet(
+                    assets: hostedSyncController.assets,
+                    selectedAsset: asset,
+                    onSelect: { hostedAssetDetail = $0 },
+                    onDelete: { selectedAsset in
+                        assetPendingDeletion = selectedAsset
+                    }
+                )
+                .environmentObject(hostedSyncController)
             }
         }
     }
@@ -417,17 +436,119 @@ struct SyncQueueView: View {
     }
 }
 
+private struct HostedGallerySheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var hostedSyncController: HostedSyncController
+
+    let assets: [HostedPhotoAsset]
+    let selectedAsset: HostedPhotoAsset
+    let onSelect: (HostedPhotoAsset) -> Void
+    let onDelete: (HostedPhotoAsset) -> Void
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    HostedAssetHeroView(asset: selectedAsset)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(selectedAsset.originalFilename)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(AVPhotosTheme.textPrimary)
+
+                        Text(assetMetadata(selectedAsset))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button(role: .destructive) {
+                        onDelete(selectedAsset)
+                        dismiss()
+                    } label: {
+                        Label(L10n.string("sync.hosted.delete"), systemImage: "trash")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(hostedSyncController.deletingAssetID != nil)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(L10n.string("sync.hosted.gallery.more"))
+                            .font(.headline)
+
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(assets) { asset in
+                                Button {
+                                    onSelect(asset)
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HostedAssetThumbnailView(asset: asset, size: 104, cornerRadius: 18)
+
+                                        Text(asset.originalFilename)
+                                            .font(.caption.weight(.medium))
+                                            .foregroundStyle(AVPhotosTheme.textPrimary)
+                                            .lineLimit(1)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .scrollContentBackground(.hidden)
+            .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
+            .navigationTitle(L10n.string("sync.hosted.gallery.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(L10n.string("action.done")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func assetMetadata(_ asset: HostedPhotoAsset) -> String {
+        "\(asset.pixelWidth)x\(asset.pixelHeight) • \(asset.byteSize) bytes • \(asset.syncStatus)"
+    }
+}
+
+private struct HostedAssetHeroView: View {
+    let asset: HostedPhotoAsset
+
+    var body: some View {
+        HostedAssetThumbnailView(asset: asset, size: 280, cornerRadius: 28)
+            .frame(maxWidth: .infinity)
+    }
+}
+
 private struct HostedAssetThumbnailView: View {
     @EnvironmentObject private var hostedSyncController: HostedSyncController
 
     let asset: HostedPhotoAsset
+    let size: CGFloat
+    let cornerRadius: CGFloat
 
     @State private var image: UIImage?
     @State private var isLoading = false
 
+    init(asset: HostedPhotoAsset, size: CGFloat = 56, cornerRadius: CGFloat = 12) {
+        self.asset = asset
+        self.size = size
+        self.cornerRadius = cornerRadius
+    }
+
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(AVPhotosTheme.cardSurface)
 
             if let image {
@@ -443,10 +564,10 @@ private struct HostedAssetThumbnailView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .frame(width: 56, height: 56)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .stroke(AVPhotosTheme.borderSubtle.opacity(0.5), lineWidth: 1)
         )
         .task(id: asset.previewPath ?? asset.assetId) {

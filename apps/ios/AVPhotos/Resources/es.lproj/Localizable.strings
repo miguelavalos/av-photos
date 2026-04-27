@@ -135,6 +135,9 @@
 "sync.hosted.delete.confirm.message" = "¿Borrar %@ del storage hosted remoto? El asset local se mantiene en el dispositivo.";
 "sync.hosted.delete.confirm.title" = "Borrar asset remoto";
 "sync.hosted.deleting" = "Borrando asset remoto";
+"sync.hosted.gallery.more" = "Más assets remotos";
+"sync.hosted.gallery.open" = "Abrir galería remota (%d)";
+"sync.hosted.gallery.title" = "Galería remota";
 "sync.hosted.detail.authRequired" = "Inicia sesión con tu cuenta de avalsys o configura un token de backend self-hosted antes de llamar endpoints de sync autenticados.";
 "sync.hosted.detail.checking" = "La app está comprobando alcance del backend y acceso a assets remotos.";
 "sync.hosted.detail.notConfigured" = "Define AVPHOTOS_AVAPPS_API_BASE_URL en tu config local para apuntar a un backend hosted o self-hosted.";
@@ -172,6 +175,7 @@
 "sync.queue.summary.title" = "Resumen de cola";
 "sync.queue.sync" = "Sincronizar pendientes";
 "sync.queue.syncing" = "Sincronizando...";
+"action.done" = "Hecho";
 "time.now" = "ahora";
 "tab.library" = "Library";
 "tab.profile" = "Perfil";
