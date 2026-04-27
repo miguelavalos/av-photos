@@ -64,6 +64,12 @@ struct CommitUploadResponse: Decodable {
     let committedAt: String
 }
 
+struct DeleteHostedAssetResponse: Decodable {
+    let assetId: String
+    let deleted: Bool
+    let deletedAt: String
+}
+
 struct HostedErrorResponse: Decodable {
     struct ErrorPayload: Decodable {
         let code: String

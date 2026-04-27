@@ -3,6 +3,7 @@ import SwiftUI
 struct SyncQueueView: View {
     @EnvironmentObject private var hostedSyncController: HostedSyncController
     @EnvironmentObject private var syncQueueController: SyncQueueController
+    @State private var assetPendingDeletion: HostedPhotoAsset?
 
     var body: some View {
         NavigationStack {
@@ -73,6 +74,20 @@ struct SyncQueueView: View {
                                 Text("\(asset.pixelWidth)x\(asset.pixelHeight) • \(asset.byteSize) bytes • \(asset.syncStatus)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+
+                                if hostedSyncController.deletingAssetID == asset.assetId {
+                                    Text(L10n.string("sync.hosted.deleting"))
+                                        .font(.caption)
+                                        .foregroundStyle(AVPhotosTheme.warning)
+                                }
+                            }
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    assetPendingDeletion = asset
+                                } label: {
+                                    Label(L10n.string("sync.hosted.delete"), systemImage: "trash")
+                                }
+                                .disabled(hostedSyncController.deletingAssetID != nil)
                             }
                         }
                     }
@@ -89,6 +104,27 @@ struct SyncQueueView: View {
             .navigationTitle(L10n.string("tab.sync"))
             .task {
                 await hostedSyncController.refresh()
+            }
+            .alert(
+                L10n.string("sync.hosted.delete.confirm.title"),
+                isPresented: deleteAlertPresentedBinding,
+                presenting: assetPendingDeletion
+            ) { asset in
+                Button(L10n.string("action.cancel"), role: .cancel) {
+                    assetPendingDeletion = nil
+                }
+                Button(L10n.string("sync.hosted.delete"), role: .destructive) {
+                    Task {
+                        do {
+                            try await hostedSyncController.deleteAsset(asset)
+                        } catch {
+                            await hostedSyncController.refresh()
+                        }
+                        assetPendingDeletion = nil
+                    }
+                }
+            } message: { asset in
+                Text(L10n.string("sync.hosted.delete.confirm.message", asset.originalFilename))
             }
         }
     }
@@ -250,5 +286,16 @@ struct SyncQueueView: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
         return formatter.localizedString(for: date, relativeTo: .now)
+    }
+
+    private var deleteAlertPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { assetPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    assetPendingDeletion = nil
+                }
+            }
+        )
     }
 }

@@ -1,6 +1,7 @@
 "account.displayName.listener" = "Fototeca";
 "account.error.unavailable" = "AV Apps Account todavía no está disponible en esta build.";
 "auth.alert.close" = "Cerrar";
+"action.cancel" = "Cancelar";
 "auth.alert.continueFailed.title" = "No se pudo continuar";
 "auth.cta.continue" = "Configurar sync";
 "auth.cta.localMode" = "Entrar en local por ahora";
@@ -127,6 +128,10 @@
 "sync.flow.step2" = "Subir bytes al destino preparado";
 "sync.flow.step3" = "Confirmar metadatos y listar assets remotos";
 "sync.hosted.assets" = "Assets remotos";
+"sync.hosted.delete" = "Borrar";
+"sync.hosted.delete.confirm.message" = "¿Borrar %@ del storage hosted remoto? El asset local se mantiene en el dispositivo.";
+"sync.hosted.delete.confirm.title" = "Borrar asset remoto";
+"sync.hosted.deleting" = "Borrando asset remoto";
 "sync.hosted.detail.authRequired" = "Inicia sesión con tu cuenta de avalsys o configura un token de backend self-hosted antes de llamar endpoints de sync autenticados.";
 "sync.hosted.detail.checking" = "La app está comprobando alcance del backend y acceso a assets remotos.";
 "sync.hosted.detail.notConfigured" = "Define AVPHOTOS_AVAPPS_API_BASE_URL en tu config local para apuntar a un backend hosted o self-hosted.";

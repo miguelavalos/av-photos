@@ -1,6 +1,7 @@
 "account.displayName.listener" = "Photo library";
 "account.error.unavailable" = "AV Apps Account isn't available in this build yet.";
 "auth.alert.close" = "Close";
+"action.cancel" = "Cancel";
 "auth.alert.continueFailed.title" = "Could not continue";
 "auth.cta.continue" = "Set up sync";
 "auth.cta.localMode" = "Browse locally for now";
@@ -127,6 +128,10 @@
 "sync.flow.step2" = "Upload bytes to the prepared target";
 "sync.flow.step3" = "Commit metadata and list remote assets";
 "sync.hosted.assets" = "Remote assets";
+"sync.hosted.delete" = "Delete";
+"sync.hosted.delete.confirm.message" = "Delete %@ from remote hosted storage? This keeps the local library asset on device.";
+"sync.hosted.delete.confirm.title" = "Delete remote asset";
+"sync.hosted.deleting" = "Deleting remote asset";
 "sync.hosted.detail.authRequired" = "Sign in with your avalsys account or configure a self-hosted backend token before calling authenticated sync endpoints.";
 "sync.hosted.detail.checking" = "The app is checking backend reachability and remote asset access.";
 "sync.hosted.detail.notConfigured" = "Set AVPHOTOS_AVAPPS_API_BASE_URL in your local config to point the app at a hosted or self-hosted backend.";

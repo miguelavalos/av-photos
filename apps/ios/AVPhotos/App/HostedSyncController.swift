@@ -14,6 +14,7 @@ final class HostedSyncController: ObservableObject {
     @Published private(set) var hostedState: HostedState = .notConfigured
     @Published private(set) var assets: [HostedPhotoAsset] = []
     @Published private(set) var lastRefreshedAt: Date?
+    @Published private(set) var deletingAssetID: String?
 
     func refresh() async {
         guard let baseURL = AppConfig.avAppsAPIBaseURL else {
@@ -74,6 +75,28 @@ final class HostedSyncController: ObservableObject {
                 lastRefreshedAt: nil
             )
         }
+    }
+
+    func deleteAsset(_ asset: HostedPhotoAsset) async throws {
+        guard let baseURL = AppConfig.avAppsAPIBaseURL else {
+            hostedState = .notConfigured
+            assets = []
+            lastRefreshedAt = nil
+            return
+        }
+
+        deletingAssetID = asset.assetId
+        defer { deletingAssetID = nil }
+
+        let client = makeClient(
+            baseURL: baseURL,
+            authToken: AppConfig.isUsingSelfHostedOverride ? AppConfig.selfHostedAuthToken : nil
+        )
+
+        _ = try await client.deleteAsset(assetID: asset.assetId)
+        assets.removeAll { $0.assetId == asset.assetId }
+        hostedState = .ready(assetCount: assets.count)
+        lastRefreshedAt = .now
     }
 
     private func makeClient(baseURL: URL, authToken: String?) -> AVPhotosAPIClient {

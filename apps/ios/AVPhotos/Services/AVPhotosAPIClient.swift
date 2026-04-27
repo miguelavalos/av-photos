@@ -117,6 +117,14 @@ struct AVPhotosAPIClient: Sendable {
         )
     }
 
+    func deleteAsset(assetID: String) async throws -> DeleteHostedAssetResponse {
+        try await request(
+            path: "/v1/apps/avphotos/assets/\(assetID)/delete",
+            method: "POST",
+            requiresAuth: true
+        )
+    }
+
     private func request<T: Decodable>(
         path: String,
         method: String,
