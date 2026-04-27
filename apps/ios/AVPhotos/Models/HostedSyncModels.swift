@@ -1,7 +1,8 @@
 import Foundation
 
 struct HostedHealthResponse: Decodable {
-    let status: String
+    let ok: Bool
+    let environment: String?
 }
 
 struct HostedPhotoAsset: Decodable, Identifiable {

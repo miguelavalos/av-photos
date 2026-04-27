@@ -53,7 +53,7 @@ fi
 rendered_config="$(cat <<EOF
 AVPHOTOS_BUNDLE_IDENTIFIER = $bundle_identifier
 CLERK_PUBLISHABLE_KEY = $clerk_publishable_key
-AVPHOTOS_AVAPPS_API_BASE_URL = ${avapps_api_base_url:-}
+AVPHOTOS_AVAPPS_API_BASE_URL = $(xcodebuild_url_value "${avapps_api_base_url:-}")
 AVPHOTOS_SUPPORT_EMAIL = ${support_email:-}
 AVPHOTOS_ACCOUNT_MANAGEMENT_URL = $(xcodebuild_url_value "${account_management_url:-}")
 AVPHOTOS_TERMS_URL = $(xcodebuild_url_value "${terms_url:-}")
