@@ -2,9 +2,21 @@ import Photos
 import SwiftUI
 
 struct LibrarySelectionView: View {
+    private enum SortMode: String, CaseIterable, Identifiable {
+        case newest
+        case oldest
+        case filename
+        case largest
+
+        var id: String { rawValue }
+    }
+
     @EnvironmentObject private var permissionController: PhotoPermissionController
     @EnvironmentObject private var localLibraryController: LocalLibraryController
     @EnvironmentObject private var syncQueueController: SyncQueueController
+
+    @State private var searchQuery = ""
+    @State private var sortMode: SortMode = .newest
 
     var body: some View {
         NavigationStack {
@@ -56,7 +68,9 @@ struct LibrarySelectionView: View {
                             Text(L10n.string("library.recent.empty"))
                                 .foregroundStyle(.secondary)
                         } else {
-                            ForEach(localLibraryController.recentAssets) { asset in
+                            recentControls
+
+                            ForEach(displayedRecentAssets) { asset in
                                 Button {
                                     localLibraryController.toggleSelection(for: asset)
                                 } label: {
@@ -87,6 +101,7 @@ struct LibrarySelectionView: View {
             .scrollContentBackground(.hidden)
             .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
             .navigationTitle("AV Photos")
+            .searchable(text: $searchQuery, prompt: L10n.string("library.search"))
             .task {
                 localLibraryController.refreshIfAuthorized(status: permissionController.status)
             }
@@ -116,5 +131,65 @@ struct LibrarySelectionView: View {
         }
 
         return "\(dateText) • \(asset.pixelWidth)x\(asset.pixelHeight)"
+    }
+
+    private var displayedRecentAssets: [LocalPhotoAsset] {
+        let filtered = localLibraryController.recentAssets.filter { asset in
+            let normalizedQuery = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard normalizedQuery.isEmpty == false else { return true }
+            return asset.filename.localizedCaseInsensitiveContains(normalizedQuery)
+        }
+
+        return filtered.sorted { lhs, rhs in
+            switch sortMode {
+            case .newest:
+                (lhs.creationDate ?? .distantPast) > (rhs.creationDate ?? .distantPast)
+            case .oldest:
+                (lhs.creationDate ?? .distantPast) < (rhs.creationDate ?? .distantPast)
+            case .filename:
+                lhs.filename.localizedCaseInsensitiveCompare(rhs.filename) == .orderedAscending
+            case .largest:
+                (lhs.pixelWidth * lhs.pixelHeight) > (rhs.pixelWidth * rhs.pixelHeight)
+            }
+        }
+    }
+
+    private var recentControls: some View {
+        HStack(spacing: 12) {
+            Menu {
+                ForEach(SortMode.allCases) { mode in
+                    Button {
+                        sortMode = mode
+                    } label: {
+                        Label(
+                            L10n.string(sortLabelKey(for: mode)),
+                            systemImage: sortMode == mode ? "checkmark" : "arrow.up.arrow.down"
+                        )
+                    }
+                }
+            } label: {
+                Label(L10n.string("library.sort"), systemImage: "arrow.up.arrow.down")
+            }
+            .buttonStyle(.bordered)
+
+            Spacer()
+
+            Text(L10n.string("library.filteredCount", displayedRecentAssets.count))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func sortLabelKey(for mode: SortMode) -> String {
+        switch mode {
+        case .newest:
+            "library.sort.newest"
+        case .oldest:
+            "library.sort.oldest"
+        case .filename:
+            "library.sort.filename"
+        case .largest:
+            "library.sort.largest"
+        }
     }
 }
