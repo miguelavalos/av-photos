@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct SyncQueueView: View {
     @EnvironmentObject private var hostedSyncController: HostedSyncController
@@ -76,17 +77,21 @@ struct SyncQueueView: View {
                 if !hostedSyncController.assets.isEmpty {
                     Section(L10n.string("sync.hosted.assets")) {
                         ForEach(hostedSyncController.assets.prefix(10)) { asset in
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(asset.originalFilename)
-                                    .font(.headline)
-                                Text("\(asset.pixelWidth)x\(asset.pixelHeight) • \(asset.byteSize) bytes • \(asset.syncStatus)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                            HStack(alignment: .top, spacing: 12) {
+                                HostedAssetThumbnailView(asset: asset)
 
-                                if hostedSyncController.deletingAssetID == asset.assetId {
-                                    Text(L10n.string("sync.hosted.deleting"))
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(asset.originalFilename)
+                                        .font(.headline)
+                                    Text("\(asset.pixelWidth)x\(asset.pixelHeight) • \(asset.byteSize) bytes • \(asset.syncStatus)")
                                         .font(.caption)
-                                        .foregroundStyle(AVPhotosTheme.warning)
+                                        .foregroundStyle(.secondary)
+
+                                    if hostedSyncController.deletingAssetID == asset.assetId {
+                                        Text(L10n.string("sync.hosted.deleting"))
+                                            .font(.caption)
+                                            .foregroundStyle(AVPhotosTheme.warning)
+                                    }
                                 }
                             }
                             .swipeActions {
@@ -104,21 +109,25 @@ struct SyncQueueView: View {
                 if !hostedSyncController.recentChanges.isEmpty {
                     Section(L10n.string("sync.hosted.changes")) {
                         ForEach(hostedSyncController.recentChanges.prefix(10)) { asset in
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack(alignment: .firstTextBaseline) {
-                                    Text(asset.originalFilename)
-                                        .font(.headline)
+                            HStack(alignment: .top, spacing: 12) {
+                                HostedAssetThumbnailView(asset: asset)
 
-                                    Spacer(minLength: 12)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack(alignment: .firstTextBaseline) {
+                                        Text(asset.originalFilename)
+                                            .font(.headline)
 
-                                    Text(changeLabel(for: asset))
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(changeColor(for: asset))
+                                        Spacer(minLength: 12)
+
+                                        Text(changeLabel(for: asset))
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(changeColor(for: asset))
+                                    }
+
+                                    Text(relativeDate(changeDate(for: asset)))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                 }
-
-                                Text(relativeDate(changeDate(for: asset)))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -405,5 +414,51 @@ struct SyncQueueView: View {
                 }
             }
         )
+    }
+}
+
+private struct HostedAssetThumbnailView: View {
+    @EnvironmentObject private var hostedSyncController: HostedSyncController
+
+    let asset: HostedPhotoAsset
+
+    @State private var image: UIImage?
+    @State private var isLoading = false
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(AVPhotosTheme.cardSurface)
+
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else if isLoading {
+                ProgressView()
+                    .tint(AVPhotosTheme.highlight)
+            } else {
+                Image(systemName: "photo")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(width: 56, height: 56)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(AVPhotosTheme.borderSubtle.opacity(0.5), lineWidth: 1)
+        )
+        .task(id: asset.previewPath ?? asset.assetId) {
+            guard image == nil else { return }
+            isLoading = true
+            defer { isLoading = false }
+
+            do {
+                image = try await hostedSyncController.previewImage(for: asset)
+            } catch {
+                image = nil
+            }
+        }
     }
 }

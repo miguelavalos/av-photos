@@ -136,6 +136,10 @@ struct AVPhotosAPIClient: Sendable {
         )
     }
 
+    func fetchPreviewData(path: String) async throws -> Data {
+        try await requestData(path: path, method: "GET", requiresAuth: true)
+    }
+
     private func request<T: Decodable>(
         path: String,
         method: String,
@@ -151,6 +155,15 @@ struct AVPhotosAPIClient: Sendable {
             bodyData: bodyData,
             contentType: contentType
         )
+    }
+
+    private func requestData(
+        path: String,
+        method: String,
+        requiresAuth: Bool
+    ) async throws -> Data {
+        let url = try resolvedURL(from: path)
+        return try await requestData(url: url, method: method, requiresAuth: requiresAuth)
     }
 
     private func request<T: Decodable>(
@@ -202,6 +215,46 @@ struct AVPhotosAPIClient: Sendable {
         } catch {
             throw AVPhotosAPIClientError.invalidResponse
         }
+    }
+
+    private func requestData(
+        url: URL,
+        method: String,
+        requiresAuth: Bool
+    ) async throws -> Data {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+
+        if requiresAuth {
+            guard let resolvedAuthToken = try await resolvedAuthToken(), !resolvedAuthToken.isEmpty else {
+                throw AVPhotosAPIClientError.authRequired
+            }
+
+            request.setValue("Bearer \(resolvedAuthToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AVPhotosAPIClientError.invalidResponse
+        }
+
+        guard (200 ..< 300).contains(httpResponse.statusCode) else {
+            if let serverError = try? JSONDecoder().decode(HostedErrorResponse.self, from: data) {
+                switch httpResponse.statusCode {
+                case 401:
+                    throw AVPhotosAPIClientError.authRequired
+                case 403:
+                    throw AVPhotosAPIClientError.forbidden(serverError.error.message)
+                default:
+                    throw AVPhotosAPIClientError.server(serverError.error.message)
+                }
+            }
+
+            throw AVPhotosAPIClientError.server("Unexpected server response: \(httpResponse.statusCode)")
+        }
+
+        return data
     }
 
     private func request<T: Decodable, Body: Encodable>(

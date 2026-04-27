@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 @MainActor
 final class HostedSyncController: ObservableObject {
@@ -22,6 +23,7 @@ final class HostedSyncController: ObservableObject {
     private let recentChangesKey = "avphotos.hosted.recentChanges"
     private let changesCursorKey = "avphotos.hosted.changesCursor"
     private let maxStoredChanges = 10
+    private var previewImageCache: [String: UIImage] = [:]
 
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -146,6 +148,7 @@ final class HostedSyncController: ObservableObject {
                 byteSize: asset.byteSize,
                 sha256: asset.sha256,
                 storageKeyOriginal: asset.storageKeyOriginal,
+                previewPath: nil,
                 syncStatus: "deleted",
                 deletedAt: ISO8601DateFormatter().string(from: .now),
                 updatedAt: ISO8601DateFormatter().string(from: .now)
@@ -157,6 +160,33 @@ final class HostedSyncController: ObservableObject {
         lastRefreshedAt = .now
         changesCursor = recentChanges.first?.updatedAt ?? changesCursor
         persistChangesState()
+    }
+
+    func previewImage(for asset: HostedPhotoAsset) async throws -> UIImage? {
+        guard let previewPath = asset.previewPath, !previewPath.isEmpty else {
+            return nil
+        }
+
+        if let cachedImage = previewImageCache[previewPath] {
+            return cachedImage
+        }
+
+        guard let baseURL = AppConfig.avAppsAPIBaseURL else {
+            return nil
+        }
+
+        let client = makeClient(
+            baseURL: baseURL,
+            authToken: AppConfig.isUsingSelfHostedOverride ? AppConfig.selfHostedAuthToken : nil
+        )
+        let data = try await client.fetchPreviewData(path: previewPath)
+
+        guard let image = UIImage(data: data) else {
+            return nil
+        }
+
+        previewImageCache[previewPath] = image
+        return image
     }
 
     private func makeClient(baseURL: URL, authToken: String?) -> AVPhotosAPIClient {

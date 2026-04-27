@@ -18,6 +18,7 @@ struct HostedPhotoAsset: Codable, Identifiable {
     let byteSize: Int
     let sha256: String
     let storageKeyOriginal: String
+    let previewPath: String?
     let syncStatus: String
     let deletedAt: String?
     let updatedAt: String
