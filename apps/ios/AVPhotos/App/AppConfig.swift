@@ -82,9 +82,16 @@ enum AppConfig {
     }
 
     static func hasValidSelfHostedBaseURL(_ value: String) -> Bool {
+        selfHostedURL(from: value) != nil
+    }
+
+    static func selfHostedURL(from value: String) -> URL? {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
-        return URL(string: trimmed) != nil
+        guard !trimmed.isEmpty else { return nil }
+        guard let url = URL(string: trimmed) else { return nil }
+        guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else { return nil }
+        guard url.host != nil else { return nil }
+        return url
     }
 
     private static func nonEmptyStringValue(for key: String) -> String? {

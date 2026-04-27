@@ -20,6 +20,13 @@
 "auth.path.selfHosted.title" = "Usar tu propio backend";
 "auth.selfHosted.clear" = "Limpiar config self-hosted";
 "auth.selfHosted.save" = "Guardar config self-hosted";
+"auth.selfHosted.test" = "Probar conexión";
+"auth.selfHosted.test.authRequired" = "El backend responde, pero este endpoint necesita un token local para acceder a los assets.";
+"auth.selfHosted.test.checking" = "Comprobando alcance del backend y acceso a assets hosted.";
+"auth.selfHosted.test.success" = "Conexión correcta. El listado remoto ha devuelto %d assets.";
+"auth.selfHosted.token.hide" = "Ocultar";
+"auth.selfHosted.token.show" = "Mostrar";
+"auth.selfHosted.validation.baseURL" = "Introduce una base URL válida con http o https.";
 "auth.option.apple" = "Continuar con Apple";
 "auth.option.google" = "Continuar con Google";
 "auth.options.detail" = "Usa el mismo onboarding y entrada de cuenta que av-radio, y conecta esta app a sync de fotos hosted o self-hosted.";

@@ -23,37 +23,61 @@ final class HostedSyncController: ObservableObject {
             return
         }
 
-        let client = AVPhotosAPIClient(baseURL: baseURL, authToken: AppConfig.authToken)
-
         hostedState = .checking
+
+        let result = await probeConnection(baseURL: baseURL, authToken: AppConfig.authToken)
+        assets = result.assets
+        hostedState = result.state
+        lastRefreshedAt = result.lastRefreshedAt
+    }
+
+    func probeConnection(baseURL: URL, authToken: String?) async -> ProbeResult {
+        let client = AVPhotosAPIClient(baseURL: baseURL, authToken: authToken)
 
         do {
             _ = try await client.fetchHealth()
         } catch {
-            hostedState = .failed(error.localizedDescription)
-            assets = []
-            return
+            return ProbeResult(
+                state: .failed(error.localizedDescription),
+                assets: [],
+                lastRefreshedAt: nil
+            )
         }
 
         do {
             let response = try await client.listAssets()
-            assets = response.assets
-            hostedState = .ready(assetCount: response.assets.count)
-            lastRefreshedAt = .now
+            return ProbeResult(
+                state: .ready(assetCount: response.assets.count),
+                assets: response.assets,
+                lastRefreshedAt: .now
+            )
         } catch let error as AVPhotosAPIClientError {
-            assets = []
-
             switch error {
             case .authRequired:
-                hostedState = .authRequired
+                return ProbeResult(state: .authRequired, assets: [], lastRefreshedAt: nil)
             case .forbidden(let message):
-                hostedState = .forbidden(message)
+                return ProbeResult(state: .forbidden(message), assets: [], lastRefreshedAt: nil)
             default:
-                hostedState = .failed(error.localizedDescription)
+                return ProbeResult(
+                    state: .failed(error.localizedDescription),
+                    assets: [],
+                    lastRefreshedAt: nil
+                )
             }
         } catch {
-            assets = []
-            hostedState = .failed(error.localizedDescription)
+            return ProbeResult(
+                state: .failed(error.localizedDescription),
+                assets: [],
+                lastRefreshedAt: nil
+            )
         }
+    }
+}
+
+extension HostedSyncController {
+    struct ProbeResult {
+        let state: HostedState
+        let assets: [HostedPhotoAsset]
+        let lastRefreshedAt: Date?
     }
 }

@@ -44,6 +44,7 @@ enum AVPhotosTheme {
     static let brandWhite = Color.white
 
     static let highlight = brandGreen
+    static let warning = Color(red: 210 / 255, green: 112 / 255, blue: 37 / 255)
     static let textPrimary = dynamicColor(
         light: UIColor(red: 13 / 255, green: 13 / 255, blue: 13 / 255, alpha: 1),
         dark: UIColor(red: 242 / 255, green: 245 / 255, blue: 243 / 255, alpha: 1)

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		05A3CECCDD20C44E919C3D9E /* SelfHostedConfigController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 190D36C4D9B7DCBF7B1396CF /* SelfHostedConfigController.swift */; };
 		1748693169CA14BE7374B2A4 /* AVPhotosTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B9C30D0E451035603B0189B /* AVPhotosTheme.swift */; };
 		3FD282516B9CFDFBE1ECDFBC /* AVPhotosAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1EEE98495245B17C60D30F /* AVPhotosAPIClient.swift */; };
 		45289AFDD1EBDCB159BA62D1 /* LocalLibraryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC661FC1010997A8FAA264A1 /* LocalLibraryController.swift */; };
@@ -24,6 +25,7 @@
 		8E0E9119AD974251CBA8468C /* PhotoPermissionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2A160AB4099863EB350ED3 /* PhotoPermissionController.swift */; };
 		A0CC73E5ADA1AABBE377922E /* SyncQueueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B90863455765F3D5C89CBBF /* SyncQueueItem.swift */; };
 		A28FDEAE6CAB7142E1C1F149 /* SyncQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5268ABE78AA459B9F1966391 /* SyncQueueView.swift */; };
+		B36CEC34BD75B897CDBDF3E5 /* SelfHostedSetupSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C753600D9C2A2FB74E8522F /* SelfHostedSetupSheet.swift */; };
 		D27AFF964C8907C117F5A356 /* LocalPhotoAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6974FCA20C286793741BF3 /* LocalPhotoAsset.swift */; };
 		D2A2BCACBAAB1E84AB147223 /* PhotoLibraryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B01008D0457613444D74B77 /* PhotoLibraryService.swift */; };
 		E1194C0839916A9B075CE732 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A77007BF2EF689CA45280A7D /* RootView.swift */; };
@@ -36,11 +38,13 @@
 		0E6974FCA20C286793741BF3 /* LocalPhotoAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPhotoAsset.swift; sourceTree = "<group>"; };
 		10E258BE8AEC29A2930712B8 /* HostedSyncController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedSyncController.swift; sourceTree = "<group>"; };
 		17AE550D3F6363CCECF31B06 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		190D36C4D9B7DCBF7B1396CF /* SelfHostedConfigController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfHostedConfigController.swift; sourceTree = "<group>"; };
 		30FAAD0722EBEC6BF2950E74 /* ProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileScreen.swift; sourceTree = "<group>"; };
 		32C2EE68CA290A13B4B725EA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		3B01008D0457613444D74B77 /* PhotoLibraryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryService.swift; sourceTree = "<group>"; };
 		3B90863455765F3D5C89CBBF /* SyncQueueItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncQueueItem.swift; sourceTree = "<group>"; };
 		491606370BB1100B76C1F73A /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		4C753600D9C2A2FB74E8522F /* SelfHostedSetupSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfHostedSetupSheet.swift; sourceTree = "<group>"; };
 		4C7D2B7CD70680DCC1C4568A /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4EDD045BF279F313655CAA3D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4FA43918EDD0105DDF861D43 /* AccessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessController.swift; sourceTree = "<group>"; };
@@ -76,6 +80,7 @@
 				CC661FC1010997A8FAA264A1 /* LocalLibraryController.swift */,
 				8C2A160AB4099863EB350ED3 /* PhotoPermissionController.swift */,
 				A77007BF2EF689CA45280A7D /* RootView.swift */,
+				190D36C4D9B7DCBF7B1396CF /* SelfHostedConfigController.swift */,
 				014203E97514967E057AC720 /* SyncQueueController.swift */,
 			);
 			path = App;
@@ -134,6 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				30FAAD0722EBEC6BF2950E74 /* ProfileScreen.swift */,
+				4C753600D9C2A2FB74E8522F /* SelfHostedSetupSheet.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -289,6 +295,8 @@
 				8E0E9119AD974251CBA8468C /* PhotoPermissionController.swift in Sources */,
 				589A7D6CC075BCAB4057F6DF /* ProfileScreen.swift in Sources */,
 				E1194C0839916A9B075CE732 /* RootView.swift in Sources */,
+				05A3CECCDD20C44E919C3D9E /* SelfHostedConfigController.swift in Sources */,
+				B36CEC34BD75B897CDBDF3E5 /* SelfHostedSetupSheet.swift in Sources */,
 				7245C2F3986214A39C9BC08F /* SyncQueueController.swift in Sources */,
 				A0CC73E5ADA1AABBE377922E /* SyncQueueItem.swift in Sources */,
 				A28FDEAE6CAB7142E1C1F149 /* SyncQueueView.swift in Sources */,

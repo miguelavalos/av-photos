@@ -1,11 +1,20 @@
 import SwiftUI
 
 struct SelfHostedSetupSheet: View {
+    private enum ConnectionState: Equatable {
+        case idle
+        case testing
+        case success(String)
+        case failure(String)
+    }
+
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var selfHostedConfigController: SelfHostedConfigController
     @EnvironmentObject private var hostedSyncController: HostedSyncController
 
     let onContinue: (() -> Void)?
+    @State private var connectionState: ConnectionState = .idle
+    @State private var isTokenVisible = false
 
     var body: some View {
         ScrollView {
@@ -46,6 +55,13 @@ struct SelfHostedSetupSheet: View {
                                         .stroke(AVPhotosTheme.borderSubtle, lineWidth: 1)
                                 }
                         )
+
+                    if !selfHostedConfigController.baseURLString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                       !selfHostedConfigController.hasValidBaseURL {
+                        Text(L10n.string("auth.selfHosted.validation.baseURL"))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(AVPhotosTheme.warning)
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -53,19 +69,33 @@ struct SelfHostedSetupSheet: View {
                         .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(AVPhotosTheme.textPrimary)
 
-                    TextField("AVPHOTOS_AUTH_TOKEN", text: $selfHostedConfigController.authToken)
+                    HStack(spacing: 10) {
+                        Group {
+                            if isTokenVisible {
+                                TextField("AVPHOTOS_AUTH_TOKEN", text: $selfHostedConfigController.authToken)
+                            } else {
+                                SecureField("AVPHOTOS_AUTH_TOKEN", text: $selfHostedConfigController.authToken)
+                            }
+                        }
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(AVPhotosTheme.cardSurface)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                        .stroke(AVPhotosTheme.borderSubtle, lineWidth: 1)
-                                }
-                        )
+
+                        Button(isTokenVisible ? L10n.string("auth.selfHosted.token.hide") : L10n.string("auth.selfHosted.token.show")) {
+                            isTokenVisible.toggle()
+                        }
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(AVPhotosTheme.highlight)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(AVPhotosTheme.cardSurface)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(AVPhotosTheme.borderSubtle, lineWidth: 1)
+                            }
+                    )
                 }
 
                 Text(L10n.string("auth.selfHosted.footer"))
@@ -73,7 +103,38 @@ struct SelfHostedSetupSheet: View {
                     .foregroundStyle(AVPhotosTheme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
+                if connectionState != .idle {
+                    connectionStatusCard
+                }
+
                 VStack(spacing: 12) {
+                    Button {
+                        Task { await testConnection() }
+                    } label: {
+                        HStack(spacing: 8) {
+                            if connectionState == .testing {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .tint(AVPhotosTheme.textPrimary)
+                            }
+
+                            Text(L10n.string("auth.selfHosted.test"))
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(AVPhotosTheme.textPrimary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                        .background(
+                            Capsule()
+                                .fill(AVPhotosTheme.mutedSurface)
+                                .overlay {
+                                    Capsule()
+                                        .stroke(AVPhotosTheme.borderSubtle, lineWidth: 1)
+                                }
+                        )
+                    }
+                    .disabled(!selfHostedConfigController.hasValidBaseURL || connectionState == .testing)
+
                     Button {
                         selfHostedConfigController.save()
                         Task { await hostedSyncController.refresh() }
@@ -87,11 +148,12 @@ struct SelfHostedSetupSheet: View {
                             .padding(.vertical, 16)
                             .background(AVPhotosTheme.highlight, in: Capsule())
                     }
-                    .disabled(!selfHostedConfigController.hasValidBaseURL)
+                    .disabled(!selfHostedConfigController.hasValidBaseURL || connectionState == .testing)
 
                     if selfHostedConfigController.isConfigured {
                         Button {
                             selfHostedConfigController.clear()
+                            connectionState = .idle
                             Task { await hostedSyncController.refresh() }
                         } label: {
                             Text(L10n.string("auth.selfHosted.clear"))
@@ -116,6 +178,16 @@ struct SelfHostedSetupSheet: View {
         .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
         .onAppear {
             selfHostedConfigController.reload()
+        }
+        .onChange(of: selfHostedConfigController.baseURLString) { _, _ in
+            if connectionState != .testing {
+                connectionState = .idle
+            }
+        }
+        .onChange(of: selfHostedConfigController.authToken) { _, _ in
+            if connectionState != .testing {
+                connectionState = .idle
+            }
         }
     }
 
@@ -147,5 +219,94 @@ struct SelfHostedSetupSheet: View {
                         .stroke(AVPhotosTheme.borderSubtle, lineWidth: 1)
                 }
         )
+    }
+
+    private var connectionStatusCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: connectionStatusIconName)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(connectionStatusColor)
+                .frame(width: 20)
+
+            Text(connectionStatusText)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(AVPhotosTheme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(AVPhotosTheme.cardSurface)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(connectionStatusColor.opacity(0.4), lineWidth: 1)
+                }
+        )
+    }
+
+    private var connectionStatusIconName: String {
+        switch connectionState {
+        case .idle:
+            "circle.dashed"
+        case .testing:
+            "bolt.horizontal.circle"
+        case .success:
+            "checkmark.circle.fill"
+        case .failure:
+            "exclamationmark.triangle.fill"
+        }
+    }
+
+    private var connectionStatusColor: Color {
+        switch connectionState {
+        case .idle:
+            AVPhotosTheme.textSecondary
+        case .testing:
+            AVPhotosTheme.highlight
+        case .success:
+            .green
+        case .failure:
+            AVPhotosTheme.warning
+        }
+    }
+
+    private var connectionStatusText: String {
+        switch connectionState {
+        case .idle:
+            ""
+        case .testing:
+            L10n.string("auth.selfHosted.test.checking")
+        case .success(let message), .failure(let message):
+            message
+        }
+    }
+
+    private func testConnection() async {
+        guard let baseURL = AppConfig.selfHostedURL(from: selfHostedConfigController.baseURLString) else {
+            connectionState = .failure(L10n.string("auth.selfHosted.validation.baseURL"))
+            return
+        }
+
+        connectionState = .testing
+        let token = selfHostedConfigController.authToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        let result = await hostedSyncController.probeConnection(
+            baseURL: baseURL,
+            authToken: token.isEmpty ? nil : token
+        )
+
+        switch result.state {
+        case .ready(let assetCount):
+            connectionState = .success(L10n.string("auth.selfHosted.test.success", assetCount))
+        case .authRequired:
+            connectionState = .failure(L10n.string("auth.selfHosted.test.authRequired"))
+        case .forbidden(let message):
+            connectionState = .failure(message)
+        case .failed(let message):
+            connectionState = .failure(message)
+        case .notConfigured:
+            connectionState = .failure(L10n.string("auth.selfHosted.validation.baseURL"))
+        case .checking:
+            connectionState = .testing
+        }
     }
 }
