@@ -45,12 +45,17 @@ struct RootView: View {
             await accessController.syncFromAccountProvider()
             presentAutomaticGuestOnboardingIfNeeded()
         }
+        .onAppear {
+            presentAutomaticGuestOnboardingIfNeeded()
+        }
         .onChange(of: accessController.accessMode) { _, _ in
             authOptionsArePresented = false
 
             if accessController.accessMode != .guest {
                 automaticGuestOnboardingIsPresented = false
                 isShowingAccountOnboarding = false
+            } else {
+                presentAutomaticGuestOnboardingIfNeeded()
             }
         }
     }
@@ -79,6 +84,14 @@ struct RootView: View {
     private func presentAutomaticGuestOnboardingIfNeeded() {
         guard automaticGuestOnboardingIsPresented == false else { return }
         guard isShowingAccountOnboarding == false else { return }
+        guard accessController.accessMode == .guest else { return }
+
+        if accessController.hasEverSeenGuestOnboarding == false {
+            accessController.markGuestOnboardingPromptShown()
+            automaticGuestOnboardingIsPresented = true
+            return
+        }
+
         guard accessController.shouldAutoShowGuestOnboarding else { return }
 
         accessController.markGuestOnboardingPromptShown()

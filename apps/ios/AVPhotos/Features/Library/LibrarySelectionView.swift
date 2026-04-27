@@ -80,6 +80,7 @@ struct LibrarySelectionView: View {
 
                 Section(L10n.string("library.boundary.section")) {
                     Text(L10n.string("library.boundary.selective"))
+                    Text(L10n.string("library.boundary.localMode"))
                     Text(L10n.string("library.boundary.hosted"))
                 }
             }

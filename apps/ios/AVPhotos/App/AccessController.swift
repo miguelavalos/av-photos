@@ -26,7 +26,6 @@ final class AccessController: ObservableObject {
 
     private let userDefaults: UserDefaults
     private let onboardingPromptKey = "avphotos.guestOnboarding.lastPromptAt"
-    private let onboardingCompletedKey = "avphotos.onboarding.completed"
     private let accountIDKey = "avphotos.account.id"
     private let accountNameKey = "avphotos.account.name"
     private let accountEmailKey = "avphotos.account.email"
@@ -55,10 +54,14 @@ final class AccessController: ObservableObject {
         true
     }
 
+    var hasEverSeenGuestOnboarding: Bool {
+        userDefaults.object(forKey: onboardingPromptKey) as? Date != nil
+    }
+
     var shouldAutoShowGuestOnboarding: Bool {
         guard accessMode == .guest else { return false }
         guard let lastPromptAt = userDefaults.object(forKey: onboardingPromptKey) as? Date else {
-            return !userDefaults.bool(forKey: onboardingCompletedKey)
+            return true
         }
 
         return Date() >= lastPromptAt.addingTimeInterval(10 * 24 * 60 * 60)
@@ -75,7 +78,6 @@ final class AccessController: ObservableObject {
     }
 
     func skipForNow() {
-        userDefaults.set(true, forKey: onboardingCompletedKey)
         markGuestOnboardingPromptShown()
         accessMode = .guest
     }
@@ -115,7 +117,7 @@ final class AccessController: ObservableObject {
         userDefaults.set(displayName, forKey: accountNameKey)
         userDefaults.set(emailAddress, forKey: accountEmailKey)
         userDefaults.set(providerLabel, forKey: accountProviderKey)
-        userDefaults.set(true, forKey: onboardingCompletedKey)
+        markGuestOnboardingPromptShown()
 
         accountUser = PhotosAccountUser(
             id: userID,
