@@ -21,7 +21,7 @@ This guide covers the current local scaffold for `AV Photos` on iOS.
 4. Open `public/av-photos/apps/ios`
 5. Adjust `apps/ios/Config/Local.xcconfig` only if you intentionally want local overrides
    Optional:
-   - set `AVPHOTOS_AVAPPS_API_BASE_URL` to a hosted or self-hosted backend
+   - set `AVAPPS_API_BASE_URL` to a hosted or self-hosted backend
 6. Generate the project:
    `xcodegen generate`
 7. Open `AVPhotos.xcodeproj`

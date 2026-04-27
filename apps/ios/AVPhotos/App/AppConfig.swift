@@ -13,7 +13,7 @@ enum AppConfig {
         if let overrideURL = nonEmptyOverrideValue(for: selfHostedBaseURLKey) {
             return URL(string: overrideURL)
         }
-        return urlValue(for: "AVPHOTOS_AVAPPS_API_BASE_URL")
+        return urlValue(for: "AVAPPS_API_BASE_URL") ?? urlValue(for: "AVPHOTOS_AVAPPS_API_BASE_URL")
     }
 
     static var selfHostedBaseURLString: String? {

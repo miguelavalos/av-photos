@@ -24,6 +24,8 @@
 	<string>$(CLERK_PUBLISHABLE_KEY)</string>
 	<key>AVPHOTOS_AVAPPS_API_BASE_URL</key>
 	<string>$(AVPHOTOS_AVAPPS_API_BASE_URL)</string>
+	<key>AVAPPS_API_BASE_URL</key>
+	<string>$(AVAPPS_API_BASE_URL)</string>
 	<key>AVPHOTOS_SUPPORT_EMAIL</key>
 	<string>$(AVPHOTOS_SUPPORT_EMAIL)</string>
 	<key>AVPHOTOS_ACCOUNT_MANAGEMENT_URL</key>

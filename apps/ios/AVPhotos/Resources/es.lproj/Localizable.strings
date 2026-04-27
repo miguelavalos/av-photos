@@ -150,7 +150,7 @@
 "sync.hosted.gallery.title" = "Galería remota";
 "sync.hosted.detail.authRequired" = "Inicia sesión con tu cuenta de avalsys o configura un token de backend self-hosted antes de llamar endpoints de sync autenticados.";
 "sync.hosted.detail.checking" = "La app está comprobando alcance del backend y acceso a assets remotos.";
-"sync.hosted.detail.notConfigured" = "Define AVPHOTOS_AVAPPS_API_BASE_URL en tu config local para apuntar a un backend hosted o self-hosted.";
+"sync.hosted.detail.notConfigured" = "Define AVAPPS_API_BASE_URL en tu config local para apuntar a un backend hosted o self-hosted.";
 "sync.hosted.detail.ready" = "El backend responde y la app puede decodificar la lista remota de assets de AV Photos.";
 "sync.hosted.gallery.detail.ready" = "Explora tu librería remota de AV Photos y revisa lo que ya está guardado en el sync hosted.";
 "sync.hosted.gallery.empty.detail" = "Los assets remotos aparecerán aquí cuando sincronices fotos locales seleccionadas.";
