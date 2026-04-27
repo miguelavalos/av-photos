@@ -34,6 +34,7 @@ printenv_value() {
 
 xcodebuild_url_value() {
   local value="$1"
+  # xcconfig treats `//` as a comment start, so URLs must escape the second slash.
   printf '%s' "$value" | sed 's#//#/$()/#g'
 }
 
