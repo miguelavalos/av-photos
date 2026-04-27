@@ -154,6 +154,9 @@
 "sync.queue.clearCompleted" = "Clear completed";
 "sync.queue.lastRun.summary" = "Synced: %d • Skipped: %d • Failed: %d";
 "sync.queue.lastRun.title" = "Last sync run";
+"sync.queue.progress.current" = "Current item: %@";
+"sync.queue.progress.summary" = "Completed: %d of %d";
+"sync.queue.progress.title" = "Sync in progress";
 "sync.queue.section" = "Queue";
 "sync.queue.retryFailed" = "Retry failed";
 "sync.queue.status.committing" = "Committing";

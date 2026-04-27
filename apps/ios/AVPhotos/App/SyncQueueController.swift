@@ -5,6 +5,7 @@ final class SyncQueueController: ObservableObject {
     @Published private(set) var items: [SyncQueueItem]
     @Published private(set) var isSyncing = false
     @Published private(set) var lastRunSummary: SyncRunSummary?
+    @Published private(set) var currentSyncFilename: String?
 
     private let userDefaults: UserDefaults
     private let queueKey = "avphotos.syncQueue"
@@ -41,6 +42,19 @@ final class SyncQueueController: ObservableObject {
 
     var completedCount: Int {
         items.filter { $0.status == .completed }.count
+    }
+
+    var totalTrackedCount: Int {
+        items.count
+    }
+
+    var overallProgress: Double {
+        guard !items.isEmpty else { return 0 }
+        let total = items.reduce(0.0) { partial, item in
+            partial + item.status.progressValue
+        }
+
+        return total / Double(items.count)
     }
 
     var deviceID: String {
@@ -95,8 +109,10 @@ final class SyncQueueController: ObservableObject {
 
         isSyncing = true
         lastRunSummary = nil
+        currentSyncFilename = nil
         defer {
             isSyncing = false
+            currentSyncFilename = nil
             persist()
         }
 
@@ -109,6 +125,7 @@ final class SyncQueueController: ObservableObject {
                 continue
             }
 
+            currentSyncFilename = items[index].filename
             let result = await syncItem(at: index, with: client)
             switch result {
             case .synced:

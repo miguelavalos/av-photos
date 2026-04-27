@@ -16,6 +16,10 @@ struct SyncQueueView: View {
                             description: Text(L10n.string("sync.queue.empty.detail"))
                         )
                     } else {
+                        if syncQueueController.isSyncing {
+                            activeSyncProgressView
+                        }
+
                         queueSummary
 
                         if let summary = syncQueueController.lastRunSummary {
@@ -220,6 +224,33 @@ struct SyncQueueView: View {
                 )
             }
             .font(.caption)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private var activeSyncProgressView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L10n.string("sync.queue.progress.title"))
+                .font(.headline)
+
+            ProgressView(value: syncQueueController.overallProgress)
+                .tint(AVPhotosTheme.highlight)
+
+            Text(
+                L10n.string(
+                    "sync.queue.progress.summary",
+                    syncQueueController.completedCount,
+                    syncQueueController.totalTrackedCount
+                )
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+            if let currentSyncFilename = syncQueueController.currentSyncFilename {
+                Text(L10n.string("sync.queue.progress.current", currentSyncFilename))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 6)
     }
