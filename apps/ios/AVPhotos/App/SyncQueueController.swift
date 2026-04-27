@@ -9,16 +9,13 @@ final class SyncQueueController: ObservableObject {
     private let queueKey = "avphotos.syncQueue"
     private let deviceIDKey = "avphotos.deviceID"
     private let photoLibraryService: PhotoLibraryService
-    private let client: AVPhotosAPIClient?
 
     init(
         userDefaults: UserDefaults = .standard,
-        photoLibraryService: PhotoLibraryService = PhotoLibraryService(),
-        client: AVPhotosAPIClient? = AppConfig.avAppsAPIBaseURL.map { AVPhotosAPIClient(baseURL: $0) }
+        photoLibraryService: PhotoLibraryService = PhotoLibraryService()
     ) {
         self.userDefaults = userDefaults
         self.photoLibraryService = photoLibraryService
-        self.client = client
 
         if let data = userDefaults.data(forKey: queueKey),
            let decoded = try? JSONDecoder().decode([SyncQueueItem].self, from: data) {
@@ -62,10 +59,12 @@ final class SyncQueueController: ObservableObject {
 
     func syncPending() async {
         guard !isSyncing else { return }
-        guard let client else {
+        guard let baseURL = AppConfig.avAppsAPIBaseURL else {
             updateAllPendingFailures(message: "Hosted sync is not configured.")
             return
         }
+
+        let client = AVPhotosAPIClient(baseURL: baseURL, authToken: AppConfig.authToken)
 
         isSyncing = true
         defer {

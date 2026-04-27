@@ -1,12 +1,33 @@
 import Foundation
 
 enum AppConfig {
+    private static let selfHostedBaseURLKey = "avphotos.selfHosted.baseURL"
+    private static let selfHostedAuthTokenKey = "avphotos.selfHosted.authToken"
+
     static var avAppsAPIBaseURL: URL? {
-        urlValue(for: "AVPHOTOS_AVAPPS_API_BASE_URL")
+        if let overrideURL = nonEmptyOverrideValue(for: selfHostedBaseURLKey) {
+            return URL(string: overrideURL)
+        }
+        return urlValue(for: "AVPHOTOS_AVAPPS_API_BASE_URL")
     }
 
     static var authToken: String? {
-        nonEmptyStringValue(for: "AVPHOTOS_AUTH_TOKEN")
+        if let overrideToken = nonEmptyOverrideValue(for: selfHostedAuthTokenKey) {
+            return overrideToken
+        }
+        return nonEmptyStringValue(for: "AVPHOTOS_AUTH_TOKEN")
+    }
+
+    static var selfHostedBaseURLString: String? {
+        nonEmptyOverrideValue(for: selfHostedBaseURLKey)
+    }
+
+    static var selfHostedAuthToken: String? {
+        nonEmptyOverrideValue(for: selfHostedAuthTokenKey)
+    }
+
+    static var isUsingSelfHostedOverride: Bool {
+        selfHostedBaseURLString != nil
     }
 
     static var accountManagementURL: URL? {
@@ -43,6 +64,29 @@ enum AppConfig {
         authToken != nil
     }
 
+    static func saveSelfHostedConfiguration(baseURLString: String, authToken: String?) {
+        let trimmedBaseURL = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
+        UserDefaults.standard.set(trimmedBaseURL, forKey: selfHostedBaseURLKey)
+
+        let trimmedToken = authToken?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if trimmedToken.isEmpty {
+            UserDefaults.standard.removeObject(forKey: selfHostedAuthTokenKey)
+        } else {
+            UserDefaults.standard.set(trimmedToken, forKey: selfHostedAuthTokenKey)
+        }
+    }
+
+    static func clearSelfHostedConfiguration() {
+        UserDefaults.standard.removeObject(forKey: selfHostedBaseURLKey)
+        UserDefaults.standard.removeObject(forKey: selfHostedAuthTokenKey)
+    }
+
+    static func hasValidSelfHostedBaseURL(_ value: String) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        return URL(string: trimmed) != nil
+    }
+
     private static func nonEmptyStringValue(for key: String) -> String? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             return nil
@@ -58,5 +102,14 @@ enum AppConfig {
         }
 
         return URL(string: value)
+    }
+
+    private static func nonEmptyOverrideValue(for key: String) -> String? {
+        guard let value = UserDefaults.standard.string(forKey: key) else {
+            return nil
+        }
+
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

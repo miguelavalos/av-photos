@@ -16,7 +16,10 @@
 "auth.path.local.title" = "Prepare locally first";
 "auth.path.selfHosted.cta" = "See self-hosted setup";
 "auth.path.selfHosted.detail" = "Point the app at your own compatible backend so nobody uses the avalsys hosted service.";
+"auth.path.selfHosted.edit" = "Edit self-hosted setup";
 "auth.path.selfHosted.title" = "Use your own backend";
+"auth.selfHosted.clear" = "Clear self-hosted config";
+"auth.selfHosted.save" = "Save self-hosted config";
 "auth.option.apple" = "Continue with Apple";
 "auth.option.google" = "Continue with Google";
 "auth.options.detail" = "Use the same onboarding and account entry flow as av-radio, then keep the photo-specific experience separate.";
@@ -136,3 +139,12 @@
 "tab.library" = "Library";
 "tab.profile" = "Profile";
 "tab.sync" = "Sync";
+"profile.backend.baseURL.empty" = "No backend URL configured";
+"profile.backend.baseURL.title" = "Base URL";
+"profile.backend.configure" = "Configure self-hosted";
+"profile.backend.edit" = "Edit self-hosted";
+"profile.backend.mode.default" = "Hosted default or no backend configured";
+"profile.backend.mode.selfHosted" = "Self-hosted override";
+"profile.backend.mode.title" = "Backend mode";
+"profile.backend.subtitle" = "Override the backend used by this client without editing Local.xcconfig.";
+"profile.backend.title" = "Backend";

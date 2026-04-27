@@ -15,19 +15,15 @@ final class HostedSyncController: ObservableObject {
     @Published private(set) var assets: [HostedPhotoAsset] = []
     @Published private(set) var lastRefreshedAt: Date?
 
-    private let client: AVPhotosAPIClient?
-
-    init(client: AVPhotosAPIClient? = AppConfig.avAppsAPIBaseURL.map { AVPhotosAPIClient(baseURL: $0) }) {
-        self.client = client
-    }
-
     func refresh() async {
-        guard let client else {
+        guard let baseURL = AppConfig.avAppsAPIBaseURL else {
             hostedState = .notConfigured
             assets = []
             lastRefreshedAt = nil
             return
         }
+
+        let client = AVPhotosAPIClient(baseURL: baseURL, authToken: AppConfig.authToken)
 
         hostedState = .checking
 

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AuthOnboardingView: View {
+    @EnvironmentObject private var selfHostedConfigController: SelfHostedConfigController
     @Binding var authOptionsArePresented: Bool
     let accountIsAvailable: Bool
     let onContinueWithApple: () async throws -> Void
@@ -43,6 +44,7 @@ struct AuthOnboardingView: View {
                     if authOptionsArePresented {
                         AuthOptionsPanel(
                             accountIsAvailable: accountIsAvailable,
+                            selfHostedConfigured: selfHostedConfigController.isConfigured,
                             activeProvider: activeProvider,
                             onAppleTap: startAppleSignIn,
                             onGoogleTap: startGoogleSignIn,
@@ -301,6 +303,7 @@ private struct CallToActionSection: View {
 
 private struct AuthOptionsPanel: View {
     let accountIsAvailable: Bool
+    let selfHostedConfigured: Bool
     let activeProvider: AuthProvider?
     let onAppleTap: () -> Void
     let onGoogleTap: () -> Void
@@ -345,7 +348,9 @@ private struct AuthOptionsPanel: View {
             ProductLaneCard(
                 title: L10n.string("auth.path.selfHosted.title"),
                 detail: L10n.string("auth.path.selfHosted.detail"),
-                buttonTitle: L10n.string("auth.path.selfHosted.cta"),
+                buttonTitle: selfHostedConfigured
+                    ? L10n.string("auth.path.selfHosted.edit")
+                    : L10n.string("auth.path.selfHosted.cta"),
                 action: onSelfHostedTap
             )
 
@@ -439,94 +444,6 @@ private struct ProductLaneCard: View {
                 .overlay {
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                }
-        )
-    }
-}
-
-private struct SelfHostedSetupSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    let onContinue: () -> Void
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(L10n.string("auth.selfHosted.title"))
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(AVPhotosTheme.textPrimary)
-
-                    Text(L10n.string("auth.selfHosted.subtitle"))
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(AVPhotosTheme.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                setupStep(
-                    number: "1",
-                    title: L10n.string("auth.selfHosted.step1.title"),
-                    detail: L10n.string("auth.selfHosted.step1.detail")
-                )
-                setupStep(
-                    number: "2",
-                    title: L10n.string("auth.selfHosted.step2.title"),
-                    detail: "AVPHOTOS_AVAPPS_API_BASE_URL"
-                )
-                setupStep(
-                    number: "3",
-                    title: L10n.string("auth.selfHosted.step3.title"),
-                    detail: "AVPHOTOS_AUTH_TOKEN"
-                )
-
-                Text(L10n.string("auth.selfHosted.footer"))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(AVPhotosTheme.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Button {
-                    dismiss()
-                    onContinue()
-                } label: {
-                    Text(L10n.string("auth.selfHosted.continue"))
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(AVPhotosTheme.brandBlack)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(AVPhotosTheme.highlight, in: Capsule())
-                }
-            }
-            .padding(24)
-        }
-        .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
-    }
-
-    private func setupStep(number: String, title: String, detail: String) -> some View {
-        HStack(alignment: .top, spacing: 14) {
-            Text(number)
-                .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(AVPhotosTheme.brandBlack)
-                .frame(width: 28, height: 28)
-                .background(AVPhotosTheme.highlight, in: Circle())
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(AVPhotosTheme.textPrimary)
-
-                Text(detail)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(AVPhotosTheme.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(AVPhotosTheme.cardSurface)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(AVPhotosTheme.borderSubtle, lineWidth: 1)
                 }
         )
     }

@@ -7,9 +7,11 @@ struct ProfileScreen: View {
     @EnvironmentObject private var themeController: AppThemeController
     @EnvironmentObject private var localLibraryController: LocalLibraryController
     @EnvironmentObject private var syncQueueController: SyncQueueController
+    @EnvironmentObject private var selfHostedConfigController: SelfHostedConfigController
     @EnvironmentObject private var hostedSyncController: HostedSyncController
 
     let startSignInFlow: (Bool) -> Void
+    @State private var isShowingSelfHostedSetup = false
 
     var body: some View {
         ScrollView {
@@ -29,6 +31,7 @@ struct ProfileScreen: View {
                 accountManagementCard
                 profileSummaryCard
                 appPreferencesCard
+                backendCard
                 localDataCard
                 helpAndLegalCard
 
@@ -40,6 +43,11 @@ struct ProfileScreen: View {
         }
         .scrollIndicators(.hidden)
         .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
+        .sheet(isPresented: $isShowingSelfHostedSetup) {
+            SelfHostedSetupSheet(onContinue: nil)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
 
     private var shellBrandHeader: some View {
@@ -214,6 +222,40 @@ struct ProfileScreen: View {
                     detail: remoteSummary
                 )
             }
+        }
+        .padding(22)
+        .background(profileCardBackground)
+    }
+
+    private var backendCard: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            sectionHeader(
+                title: L10n.string("profile.backend.title"),
+                subtitle: L10n.string("profile.backend.subtitle")
+            )
+
+            ShellRow(
+                systemImage: "server.rack",
+                title: L10n.string("profile.backend.mode.title"),
+                detail: selfHostedConfigController.isConfigured
+                    ? L10n.string("profile.backend.mode.selfHosted")
+                    : L10n.string("profile.backend.mode.default")
+            )
+
+            ShellRow(
+                systemImage: "link",
+                title: L10n.string("profile.backend.baseURL.title"),
+                detail: selfHostedConfigController.resolvedBaseURLString.isEmpty
+                    ? L10n.string("profile.backend.baseURL.empty")
+                    : selfHostedConfigController.resolvedBaseURLString
+            )
+
+            ProfilePrimaryButton(
+                title: selfHostedConfigController.isConfigured
+                    ? L10n.string("profile.backend.edit")
+                    : L10n.string("profile.backend.configure"),
+                action: { isShowingSelfHostedSetup = true }
+            )
         }
         .padding(22)
         .background(profileCardBackground)
