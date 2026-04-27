@@ -2,6 +2,7 @@
 .build
 DerivedData
 *.log
+.infisical/
 
 !apps/ios/
 !apps/ios/**

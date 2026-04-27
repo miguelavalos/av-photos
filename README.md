@@ -10,7 +10,7 @@ This repository is planned as the public home for an `iOS-first` app that syncs 
 - optional account connection
 - local-first selection and queueing
 - hosted sync for `Pro` users
-- self-hosted compatibility for users who do not want to use the Avalsys-hosted backend
+- self-hosted compatibility for users who do not want to use the avalsys-hosted backend
 
 ## Current state
 
@@ -22,7 +22,7 @@ Public roadmap and setup docs live in:
 - [docs/install-ios.md](docs/install-ios.md)
 - [docs/release-process.md](docs/release-process.md)
 
-Internal Avalsys planning may exist elsewhere, but this public repository should remain understandable on its own.
+Internal avalsys planning may exist elsewhere, but this public repository should remain understandable on its own.
 
 ## Planned repository shape
 
@@ -36,8 +36,19 @@ docs/
 
 ## Local iOS setup
 
-1. Go to `apps/ios`
-2. Copy `Config/Local.xcconfig.example` to `Config/Local.xcconfig`
+1. Resolve the local iOS config from Infisical:
+   `./scripts/generate-local-xcconfig.sh local`
+2. Go to `apps/ios`
 3. Generate the Xcode project:
    `xcodegen generate`
 4. Open `AVPhotos.xcodeproj` in Xcode and run the `AVPhotos` scheme
+
+## Local secrets
+
+This repo follows the same local secret handling as `av-radio` for iOS builds:
+
+- `apps/ios/Config/Local.xcconfig` is generated locally from `infisical`
+- `.infisical/` stays out of git
+- no real tokens or hosted endpoints should be committed
+
+`varlock` is not wired here yet because this public repo currently ships only the native iOS client. If `av-photos` later adds a public web app or worker package, that part should follow the standard avalsys `varlock` + `infisical` baseline.

@@ -9,7 +9,7 @@ struct LibrarySelectionView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Photo Library") {
+                Section(L10n.string("library.permissions.section")) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(permissionController.title)
                             .font(.headline)
@@ -18,12 +18,12 @@ struct LibrarySelectionView: View {
                             .foregroundStyle(.secondary)
 
                         if permissionController.canRequestAccess {
-                            Button("Request Access") {
+                            Button(L10n.string("library.permissions.request")) {
                                 permissionController.requestAccess()
                             }
                             .buttonStyle(.borderedProminent)
                         } else {
-                            Button("Refresh Status") {
+                            Button(L10n.string("library.permissions.refresh")) {
                                 permissionController.refresh()
                             }
                             .buttonStyle(.bordered)
@@ -33,27 +33,27 @@ struct LibrarySelectionView: View {
                 }
 
                 if permissionController.status == .authorized || permissionController.status == .limited {
-                    Section("Selected For Sync") {
+                    Section(L10n.string("library.selected.section")) {
                         if localLibraryController.selectedAssets.isEmpty {
-                            Text("No local photos are selected yet.")
+                            Text(L10n.string("library.selected.empty"))
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(localLibraryController.selectedAssets) { asset in
                                 assetRow(asset)
                             }
 
-                            Button("Add Selected To Sync Queue") {
+                            Button(L10n.string("library.selected.enqueue")) {
                                 syncQueueController.enqueue(localLibraryController.selectedAssets)
                             }
                             .buttonStyle(.borderedProminent)
                         }
                     }
 
-                    Section("Recent Local Photos") {
+                    Section(L10n.string("library.recent.section")) {
                         if localLibraryController.isLoading {
                             ProgressView()
                         } else if localLibraryController.recentAssets.isEmpty {
-                            Text("No local photo assets were loaded.")
+                            Text(L10n.string("library.recent.empty"))
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(localLibraryController.recentAssets) { asset in
@@ -78,11 +78,13 @@ struct LibrarySelectionView: View {
                     }
                 }
 
-                Section("V1 Product Boundary") {
-                    Text("AV Photos starts with selective sync. The app should help you choose exactly what to upload instead of assuming the full camera roll.")
-                    Text("Hosted sync is intended for Pro access. Self-hosted compatibility should remain possible without depending on the Avalsys production backend.")
+                Section(L10n.string("library.boundary.section")) {
+                    Text(L10n.string("library.boundary.selective"))
+                    Text(L10n.string("library.boundary.hosted"))
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
             .navigationTitle("AV Photos")
             .task {
                 localLibraryController.refreshIfAuthorized(status: permissionController.status)
@@ -109,7 +111,7 @@ struct LibrarySelectionView: View {
         if let creationDate = asset.creationDate {
             dateText = creationDate.formatted(date: .abbreviated, time: .omitted)
         } else {
-            dateText = "Unknown date"
+            dateText = L10n.string("library.asset.unknownDate")
         }
 
         return "\(dateText) • \(asset.pixelWidth)x\(asset.pixelHeight)"

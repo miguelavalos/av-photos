@@ -7,12 +7,12 @@ struct SyncQueueView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Queue") {
+                Section(L10n.string("sync.queue.section")) {
                     if syncQueueController.items.isEmpty {
                         ContentUnavailableView(
-                            "No Pending Uploads",
+                            L10n.string("sync.queue.empty.title"),
                             systemImage: "tray",
-                            description: Text("Select local photos in the Library tab and add them to the queue.")
+                            description: Text(L10n.string("sync.queue.empty.detail"))
                         )
                     } else {
                         ForEach(syncQueueController.items) { item in
@@ -31,7 +31,7 @@ struct SyncQueueView: View {
                             }
                         }
 
-                        Button(syncQueueController.isSyncing ? "Syncing..." : "Sync Pending Items") {
+                        Button(syncQueueController.isSyncing ? L10n.string("sync.queue.syncing") : L10n.string("sync.queue.sync")) {
                             Task {
                                 await syncQueueController.syncPending()
                                 await hostedSyncController.refresh()
@@ -42,7 +42,7 @@ struct SyncQueueView: View {
                     }
                 }
 
-                Section("Hosted Status") {
+                Section(L10n.string("sync.hosted.section")) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(statusTitle)
                             .font(.headline)
@@ -50,7 +50,7 @@ struct SyncQueueView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
 
-                        Button("Refresh Hosted State") {
+                        Button(L10n.string("sync.hosted.refresh")) {
                             Task {
                                 await hostedSyncController.refresh()
                             }
@@ -61,7 +61,7 @@ struct SyncQueueView: View {
                 }
 
                 if !hostedSyncController.assets.isEmpty {
-                    Section("Remote Assets") {
+                    Section(L10n.string("sync.hosted.assets")) {
                         ForEach(hostedSyncController.assets.prefix(10)) { asset in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(asset.originalFilename)
@@ -74,13 +74,15 @@ struct SyncQueueView: View {
                     }
                 }
 
-                Section("Hosted Flow") {
-                    Label("Prepare upload in private av-apps", systemImage: "1.circle")
-                    Label("Upload bytes to the prepared target", systemImage: "2.circle")
-                    Label("Commit metadata and list remote assets", systemImage: "3.circle")
+                Section(L10n.string("sync.flow.section")) {
+                    Label(L10n.string("sync.flow.step1"), systemImage: "1.circle")
+                    Label(L10n.string("sync.flow.step2"), systemImage: "2.circle")
+                    Label(L10n.string("sync.flow.step3"), systemImage: "3.circle")
                 }
             }
-            .navigationTitle("Sync")
+            .scrollContentBackground(.hidden)
+            .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
+            .navigationTitle(L10n.string("tab.sync"))
             .task {
                 await hostedSyncController.refresh()
             }
@@ -90,33 +92,34 @@ struct SyncQueueView: View {
     private var statusTitle: String {
         switch hostedSyncController.hostedState {
         case .notConfigured:
-            "Hosted sync is not configured"
+            L10n.string("sync.hosted.status.notConfigured")
         case .checking:
-            "Checking hosted sync"
+            L10n.string("sync.hosted.status.checking")
         case .authRequired:
-            "Hosted sync needs an auth token"
+            L10n.string("sync.hosted.status.authRequired")
         case .forbidden:
-            "Hosted sync is configured but not entitled"
+            L10n.string("sync.hosted.status.forbidden")
         case .ready(let assetCount):
-            "Hosted sync is reachable"
-            + (assetCount == 0 ? " with no remote assets yet" : " with \(assetCount) remote assets")
+            assetCount == 0
+                ? L10n.string("sync.hosted.status.readyEmpty")
+                : L10n.string("sync.hosted.status.readyCount", assetCount)
         case .failed:
-            "Hosted sync check failed"
+            L10n.string("sync.hosted.status.failed")
         }
     }
 
     private var statusDetail: String {
         switch hostedSyncController.hostedState {
         case .notConfigured:
-            "Set `AVPHOTOS_AVAPPS_API_BASE_URL` in your local config to point the app at a hosted or self-hosted backend."
+            L10n.string("sync.hosted.detail.notConfigured")
         case .checking:
-            "The app is checking backend reachability and remote asset access."
+            L10n.string("sync.hosted.detail.checking")
         case .authRequired:
-            "Set `AVPHOTOS_AUTH_TOKEN` locally if you want this public client to call authenticated hosted endpoints during development."
+            L10n.string("sync.hosted.detail.authRequired")
         case .forbidden(let message):
             message
         case .ready:
-            "The backend is reachable and the app can decode the remote AV Photos asset list."
+            L10n.string("sync.hosted.detail.ready")
         case .failed(let message):
             message
         }
