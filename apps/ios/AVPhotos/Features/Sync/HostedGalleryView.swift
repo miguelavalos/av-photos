@@ -177,30 +177,52 @@ struct HostedGalleryDetailSheet: View {
     let onSelect: (HostedPhotoAsset) -> Void
     let onDelete: (HostedPhotoAsset) -> Void
 
+    @State private var selectedAssetID: String
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
 
+    init(
+        assets: [HostedPhotoAsset],
+        selectedAsset: HostedPhotoAsset,
+        onSelect: @escaping (HostedPhotoAsset) -> Void,
+        onDelete: @escaping (HostedPhotoAsset) -> Void
+    ) {
+        self.assets = assets
+        self.selectedAsset = selectedAsset
+        self.onSelect = onSelect
+        self.onDelete = onDelete
+        _selectedAssetID = State(initialValue: selectedAsset.assetId)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    HostedAssetHeroView(asset: selectedAsset)
+                    TabView(selection: $selectedAssetID) {
+                        ForEach(assets) { asset in
+                            HostedAssetHeroView(asset: asset)
+                                .tag(asset.assetId)
+                        }
+                    }
+                    .frame(height: 280)
+                    .tabViewStyle(.page(indexDisplayMode: .automatic))
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(selectedAsset.originalFilename)
+                        Text(activeAsset.originalFilename)
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(AVPhotosTheme.textPrimary)
 
-                        Text(assetMetadata(selectedAsset))
+                        Text(assetMetadata(activeAsset))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
 
                     Button(role: .destructive) {
-                        onDelete(selectedAsset)
+                        onDelete(activeAsset)
                         dismiss()
                     } label: {
                         Label(L10n.string("sync.hosted.delete"), systemImage: "trash")
@@ -216,7 +238,7 @@ struct HostedGalleryDetailSheet: View {
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(assets) { asset in
                                 Button {
-                                    onSelect(asset)
+                                    selectedAssetID = asset.assetId
                                 } label: {
                                     VStack(alignment: .leading, spacing: 6) {
                                         HostedAssetThumbnailView(asset: asset, size: 104, cornerRadius: 18)
@@ -238,6 +260,10 @@ struct HostedGalleryDetailSheet: View {
             .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
             .navigationTitle(L10n.string("sync.hosted.gallery.title"))
             .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: selectedAssetID) { _, newValue in
+                guard let nextAsset = assets.first(where: { $0.assetId == newValue }) else { return }
+                onSelect(nextAsset)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(L10n.string("action.done")) {
@@ -246,6 +272,10 @@ struct HostedGalleryDetailSheet: View {
                 }
             }
         }
+    }
+
+    private var activeAsset: HostedPhotoAsset {
+        assets.first(where: { $0.assetId == selectedAssetID }) ?? selectedAsset
     }
 
     private func assetMetadata(_ asset: HostedPhotoAsset) -> String {
