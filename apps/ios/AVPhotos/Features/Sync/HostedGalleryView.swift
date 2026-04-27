@@ -28,6 +28,7 @@ struct HostedGalleryView: View {
     @State private var selectedAssetIDs = Set<String>()
     @State private var sortMode: SortMode = .newest
     @State private var filterMode: FilterMode = .all
+    @State private var searchQuery = ""
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -95,6 +96,7 @@ struct HostedGalleryView: View {
             .scrollContentBackground(.hidden)
             .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
             .navigationTitle(L10n.string("tab.remote"))
+            .searchable(text: $searchQuery, prompt: L10n.string("sync.hosted.search"))
             .task {
                 await hostedSyncController.refresh()
             }
@@ -154,7 +156,7 @@ struct HostedGalleryView: View {
                             selectionModeEnabled = false
                             selectedAssetIDs.removeAll()
                         }
-                    } else if !displayedAssets.isEmpty {
+                    } else if !displayedAssets.isEmpty && filterMode != .deleted {
                         Button(L10n.string("sync.hosted.select")) {
                             selectionModeEnabled = true
                         }
@@ -223,7 +225,7 @@ struct HostedGalleryView: View {
                 assetsPendingBulkDeletion = displayedAssets.filter { selectedAssetIDs.contains($0.assetId) }
             }
             .buttonStyle(.borderedProminent)
-            .disabled(selectedAssetIDs.isEmpty)
+            .disabled(selectedAssetIDs.isEmpty || filterMode == .deleted)
         }
         .padding(16)
         .background(AVPhotosTheme.cardSurface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -318,7 +320,15 @@ struct HostedGalleryView: View {
     }
 
     private var displayedAssets: [HostedPhotoAsset] {
-        let filtered = hostedSyncController.assets.filter { asset in
+        let baseAssets: [HostedPhotoAsset]
+        switch filterMode {
+        case .all, .uploaded:
+            baseAssets = hostedSyncController.assets
+        case .deleted:
+            baseAssets = hostedSyncController.recentChanges.filter { $0.syncStatus == "deleted" }
+        }
+
+        let filtered = baseAssets.filter { asset in
             switch filterMode {
             case .all:
                 true
@@ -327,6 +337,11 @@ struct HostedGalleryView: View {
             case .deleted:
                 asset.syncStatus == "deleted"
             }
+        }
+        .filter { asset in
+            let normalizedQuery = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard normalizedQuery.isEmpty == false else { return true }
+            return asset.originalFilename.localizedCaseInsensitiveContains(normalizedQuery)
         }
 
         return filtered.sorted { lhs, rhs in
@@ -352,6 +367,11 @@ struct HostedGalleryView: View {
     }
 
     private func deleteSelectedAssets() async {
+        guard filterMode != .deleted else {
+            assetsPendingBulkDeletion = []
+            return
+        }
+
         let assetsToDelete = assetsPendingBulkDeletion
         assetsPendingBulkDeletion = []
 

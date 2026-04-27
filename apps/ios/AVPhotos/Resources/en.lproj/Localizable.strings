@@ -159,6 +159,7 @@
 "sync.hosted.sort.largest" = "Largest";
 "sync.hosted.sort.newest" = "Newest first";
 "sync.hosted.sort.oldest" = "Oldest first";
+"sync.hosted.search" = "Search remote assets";
 "sync.hosted.section" = "Hosted status";
 "sync.hosted.status.authRequired" = "Hosted sync needs sign-in";
 "sync.hosted.status.checking" = "Checking hosted sync";
