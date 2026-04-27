@@ -10,6 +10,8 @@ This app scaffold establishes:
 - local config pattern
 - photo-library permission flow
 - product shell for library, sync queue, and account tabs
+- hosted backend reachability check
+- authenticated remote asset listing when a local auth token is configured
 
 Hosted upload, account auth, and real sync integration are still follow-up work.
 

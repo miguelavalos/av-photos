@@ -1,9 +1,12 @@
 import Foundation
 
-@MainActor
 enum AppConfig {
     static var avAppsAPIBaseURL: URL? {
         urlValue(for: "AVPHOTOS_AVAPPS_API_BASE_URL")
+    }
+
+    static var authToken: String? {
+        nonEmptyStringValue(for: "AVPHOTOS_AUTH_TOKEN")
     }
 
     static var accountManagementURL: URL? {
@@ -34,6 +37,10 @@ enum AppConfig {
 
     static var isHostedSyncConfigured: Bool {
         avAppsAPIBaseURL != nil
+    }
+
+    static var isHostedAuthConfigured: Bool {
+        authToken != nil
     }
 
     private static func nonEmptyStringValue(for key: String) -> String? {
