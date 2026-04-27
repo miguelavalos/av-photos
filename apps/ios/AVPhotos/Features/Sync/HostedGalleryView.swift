@@ -1,0 +1,317 @@
+import SwiftUI
+import UIKit
+
+struct HostedGalleryView: View {
+    @EnvironmentObject private var hostedSyncController: HostedSyncController
+
+    @State private var assetPendingDeletion: HostedPhotoAsset?
+    @State private var selectedAsset: HostedPhotoAsset?
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    hostedStatusCard
+
+                    if hostedSyncController.assets.isEmpty {
+                        ContentUnavailableView(
+                            L10n.string("sync.hosted.gallery.empty.title"),
+                            systemImage: "photo.stack",
+                            description: Text(L10n.string("sync.hosted.gallery.empty.detail"))
+                        )
+                    } else {
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(hostedSyncController.assets) { asset in
+                                Button {
+                                    selectedAsset = asset
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HostedAssetThumbnailView(asset: asset, size: 112, cornerRadius: 18)
+
+                                        Text(asset.originalFilename)
+                                            .font(.caption.weight(.medium))
+                                            .foregroundStyle(AVPhotosTheme.textPrimary)
+                                            .lineLimit(1)
+
+                                        Text("\(asset.pixelWidth)x\(asset.pixelHeight)")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .scrollContentBackground(.hidden)
+            .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
+            .navigationTitle(L10n.string("tab.remote"))
+            .task {
+                await hostedSyncController.refresh()
+            }
+            .sheet(item: $selectedAsset) { asset in
+                HostedGalleryDetailSheet(
+                    assets: hostedSyncController.assets,
+                    selectedAsset: asset,
+                    onSelect: { selectedAsset = $0 },
+                    onDelete: { assetPendingDeletion = $0 }
+                )
+                .environmentObject(hostedSyncController)
+            }
+            .alert(
+                L10n.string("sync.hosted.delete.confirm.title"),
+                isPresented: deleteAlertPresentedBinding,
+                presenting: assetPendingDeletion
+            ) { asset in
+                Button(L10n.string("action.cancel"), role: .cancel) {
+                    assetPendingDeletion = nil
+                }
+                Button(L10n.string("sync.hosted.delete"), role: .destructive) {
+                    Task {
+                        do {
+                            try await hostedSyncController.deleteAsset(asset)
+                        } catch {
+                            await hostedSyncController.refresh()
+                        }
+
+                        if selectedAsset?.assetId == asset.assetId {
+                            selectedAsset = nil
+                        }
+                        assetPendingDeletion = nil
+                    }
+                }
+            } message: { asset in
+                Text(L10n.string("sync.hosted.delete.confirm.message", asset.originalFilename))
+            }
+        }
+    }
+
+    private var hostedStatusCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(statusTitle)
+                .font(.headline)
+                .foregroundStyle(AVPhotosTheme.textPrimary)
+
+            Text(statusDetail)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Button(L10n.string("sync.hosted.refresh")) {
+                Task {
+                    await hostedSyncController.refresh()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AVPhotosTheme.cardSurface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(AVPhotosTheme.borderSubtle.opacity(0.45), lineWidth: 1)
+        )
+    }
+
+    private var statusTitle: String {
+        switch hostedSyncController.hostedState {
+        case .notConfigured:
+            L10n.string("sync.hosted.status.notConfigured")
+        case .checking:
+            L10n.string("sync.hosted.status.checking")
+        case .authRequired:
+            L10n.string("sync.hosted.status.authRequired")
+        case .forbidden:
+            L10n.string("sync.hosted.status.forbidden")
+        case .ready(let assetCount):
+            assetCount == 0
+                ? L10n.string("sync.hosted.status.readyEmpty")
+                : L10n.string("sync.hosted.status.readyCount", assetCount)
+        case .failed:
+            L10n.string("sync.hosted.status.failed")
+        }
+    }
+
+    private var statusDetail: String {
+        switch hostedSyncController.hostedState {
+        case .notConfigured:
+            L10n.string("sync.hosted.detail.notConfigured")
+        case .checking:
+            L10n.string("sync.hosted.detail.checking")
+        case .authRequired:
+            L10n.string("sync.hosted.detail.authRequired")
+        case .forbidden(let message):
+            message
+        case .ready:
+            L10n.string("sync.hosted.gallery.detail.ready")
+        case .failed(let message):
+            message
+        }
+    }
+
+    private var deleteAlertPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { assetPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    assetPendingDeletion = nil
+                }
+            }
+        )
+    }
+}
+
+struct HostedGalleryDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var hostedSyncController: HostedSyncController
+
+    let assets: [HostedPhotoAsset]
+    let selectedAsset: HostedPhotoAsset
+    let onSelect: (HostedPhotoAsset) -> Void
+    let onDelete: (HostedPhotoAsset) -> Void
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    HostedAssetHeroView(asset: selectedAsset)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(selectedAsset.originalFilename)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(AVPhotosTheme.textPrimary)
+
+                        Text(assetMetadata(selectedAsset))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button(role: .destructive) {
+                        onDelete(selectedAsset)
+                        dismiss()
+                    } label: {
+                        Label(L10n.string("sync.hosted.delete"), systemImage: "trash")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(hostedSyncController.deletingAssetID != nil)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(L10n.string("sync.hosted.gallery.more"))
+                            .font(.headline)
+
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(assets) { asset in
+                                Button {
+                                    onSelect(asset)
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HostedAssetThumbnailView(asset: asset, size: 104, cornerRadius: 18)
+
+                                        Text(asset.originalFilename)
+                                            .font(.caption.weight(.medium))
+                                            .foregroundStyle(AVPhotosTheme.textPrimary)
+                                            .lineLimit(1)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .scrollContentBackground(.hidden)
+            .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
+            .navigationTitle(L10n.string("sync.hosted.gallery.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(L10n.string("action.done")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func assetMetadata(_ asset: HostedPhotoAsset) -> String {
+        "\(asset.pixelWidth)x\(asset.pixelHeight) • \(asset.byteSize) bytes • \(asset.syncStatus)"
+    }
+}
+
+struct HostedAssetHeroView: View {
+    let asset: HostedPhotoAsset
+
+    var body: some View {
+        HostedAssetThumbnailView(asset: asset, size: 280, cornerRadius: 28)
+            .frame(maxWidth: .infinity)
+    }
+}
+
+struct HostedAssetThumbnailView: View {
+    @EnvironmentObject private var hostedSyncController: HostedSyncController
+
+    let asset: HostedPhotoAsset
+    let size: CGFloat
+    let cornerRadius: CGFloat
+
+    @State private var image: UIImage?
+    @State private var isLoading = false
+
+    init(asset: HostedPhotoAsset, size: CGFloat = 56, cornerRadius: CGFloat = 12) {
+        self.asset = asset
+        self.size = size
+        self.cornerRadius = cornerRadius
+    }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(AVPhotosTheme.cardSurface)
+
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else if isLoading {
+                ProgressView()
+                    .tint(AVPhotosTheme.highlight)
+            } else {
+                Image(systemName: "photo")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(AVPhotosTheme.borderSubtle.opacity(0.5), lineWidth: 1)
+        )
+        .task(id: asset.previewPath ?? asset.assetId) {
+            guard image == nil else { return }
+            isLoading = true
+            defer { isLoading = false }
+
+            do {
+                image = try await hostedSyncController.previewImage(for: asset)
+            } catch {
+                image = nil
+            }
+        }
+    }
+}

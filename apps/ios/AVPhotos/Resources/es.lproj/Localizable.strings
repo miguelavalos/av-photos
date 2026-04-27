@@ -142,6 +142,9 @@
 "sync.hosted.detail.checking" = "La app está comprobando alcance del backend y acceso a assets remotos.";
 "sync.hosted.detail.notConfigured" = "Define AVPHOTOS_AVAPPS_API_BASE_URL en tu config local para apuntar a un backend hosted o self-hosted.";
 "sync.hosted.detail.ready" = "El backend responde y la app puede decodificar la lista remota de assets de AV Photos.";
+"sync.hosted.gallery.detail.ready" = "Explora tu librería remota de AV Photos y revisa lo que ya está guardado en el sync hosted.";
+"sync.hosted.gallery.empty.detail" = "Los assets remotos aparecerán aquí cuando sincronices fotos locales seleccionadas.";
+"sync.hosted.gallery.empty.title" = "Aún no hay assets remotos";
 "sync.hosted.refresh" = "Actualizar estado hosted";
 "sync.hosted.section" = "Estado hosted";
 "sync.hosted.status.authRequired" = "El sync hosted necesita sesión iniciada";
@@ -179,6 +182,7 @@
 "time.now" = "ahora";
 "tab.library" = "Library";
 "tab.profile" = "Perfil";
+"tab.remote" = "Remoto";
 "tab.sync" = "Sync";
 "profile.backend.baseURL.empty" = "No hay backend URL configurada";
 "profile.backend.baseURL.title" = "Base URL";

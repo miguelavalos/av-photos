@@ -35,6 +35,12 @@ struct RootView: View {
                             Label(L10n.string("tab.sync"), systemImage: "arrow.triangle.2.circlepath")
                         }
 
+                    HostedGalleryView()
+                        .tag(RootTab.remote)
+                        .tabItem {
+                            Label(L10n.string("tab.remote"), systemImage: "rectangle.stack.fill.badge.photo")
+                        }
+
                     ProfileScreen(startSignInFlow: startSignInFlow)
                         .tag(RootTab.profile)
                         .tabItem {
@@ -108,5 +114,6 @@ struct RootView: View {
 private enum RootTab {
     case library
     case sync
+    case remote
     case profile
 }

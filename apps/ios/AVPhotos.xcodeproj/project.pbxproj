@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		05A3CECCDD20C44E919C3D9E /* SelfHostedConfigController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 190D36C4D9B7DCBF7B1396CF /* SelfHostedConfigController.swift */; };
 		09D1A6DA67BDED739BB8E608 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0C5E25E9FA728F10204B7E39 /* ClerkKit */; };
+		12CB658C85D17CBD98A2A80D /* HostedGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2141D0F92E65C1B474BB4530 /* HostedGalleryView.swift */; };
 		1748693169CA14BE7374B2A4 /* AVPhotosTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B9C30D0E451035603B0189B /* AVPhotosTheme.swift */; };
 		3FD282516B9CFDFBE1ECDFBC /* AVPhotosAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1EEE98495245B17C60D30F /* AVPhotosAPIClient.swift */; };
 		45289AFDD1EBDCB159BA62D1 /* LocalLibraryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC661FC1010997A8FAA264A1 /* LocalLibraryController.swift */; };
@@ -43,6 +44,7 @@
 		10E258BE8AEC29A2930712B8 /* HostedSyncController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedSyncController.swift; sourceTree = "<group>"; };
 		17AE550D3F6363CCECF31B06 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		190D36C4D9B7DCBF7B1396CF /* SelfHostedConfigController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfHostedConfigController.swift; sourceTree = "<group>"; };
+		2141D0F92E65C1B474BB4530 /* HostedGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedGalleryView.swift; sourceTree = "<group>"; };
 		2D4A1E4B6E364927874AD120 /* SharedAccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedAccountService.swift; sourceTree = "<group>"; };
 		30FAAD0722EBEC6BF2950E74 /* ProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileScreen.swift; sourceTree = "<group>"; };
 		32C2EE68CA290A13B4B725EA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 		3994F80C9F149F83EB5E15C4 /* Sync */ = {
 			isa = PBXGroup;
 			children = (
+				2141D0F92E65C1B474BB4530 /* HostedGalleryView.swift */,
 				5268ABE78AA459B9F1966391 /* SyncQueueView.swift */,
 			);
 			path = Sync;
@@ -312,6 +315,7 @@
 				5245CEAA4333EB15F0F6BD0B /* AccessController.swift in Sources */,
 				6C1005B4FD8D2BC47EB20E40 /* AppConfig.swift in Sources */,
 				4CE2A3A18DA9DF305AD54675 /* AuthOnboardingView.swift in Sources */,
+				12CB658C85D17CBD98A2A80D /* HostedGalleryView.swift in Sources */,
 				F911E57444FC451CC8864483 /* HostedSyncController.swift in Sources */,
 				60306D6E2D2C336559A4F8C8 /* HostedSyncModels.swift in Sources */,
 				53394CFCE9D9A6EFB38698C6 /* L10n.swift in Sources */,
