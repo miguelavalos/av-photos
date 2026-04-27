@@ -1,11 +1,11 @@
 import Foundation
 
-struct HostedHealthResponse: Decodable {
+struct HostedHealthResponse: Codable {
     let ok: Bool
     let environment: String?
 }
 
-struct HostedPhotoAsset: Decodable, Identifiable {
+struct HostedPhotoAsset: Codable, Identifiable {
     let assetId: String
     let deviceId: String
     let sourceLocalIdentifier: String
@@ -25,12 +25,12 @@ struct HostedPhotoAsset: Decodable, Identifiable {
     var id: String { assetId }
 }
 
-struct HostedPhotoAssetListResponse: Decodable {
+struct HostedPhotoAssetListResponse: Codable {
     let assets: [HostedPhotoAsset]
     let generatedAt: String
 }
 
-struct HostedPhotoAssetChangesResponse: Decodable {
+struct HostedPhotoAssetChangesResponse: Codable {
     let changes: [HostedPhotoAsset]
     let cursor: String?
     let generatedAt: String
@@ -48,7 +48,7 @@ struct PreparedUploadRequest: Encodable {
     let sha256: String
 }
 
-struct PreparedUploadResponse: Decodable {
+struct PreparedUploadResponse: Codable {
     let assetId: String
     let uploadJobId: String?
     let uploadToken: String?
@@ -65,19 +65,19 @@ struct CommitUploadRequest: Encodable {
     let deviceId: String
 }
 
-struct CommitUploadResponse: Decodable {
+struct CommitUploadResponse: Codable {
     let asset: HostedPhotoAsset
     let committedAt: String
 }
 
-struct DeleteHostedAssetResponse: Decodable {
+struct DeleteHostedAssetResponse: Codable {
     let assetId: String
     let deleted: Bool
     let deletedAt: String
 }
 
-struct HostedErrorResponse: Decodable {
-    struct ErrorPayload: Decodable {
+struct HostedErrorResponse: Codable {
+    struct ErrorPayload: Codable {
         let code: String
         let message: String
     }

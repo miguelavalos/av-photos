@@ -18,6 +18,24 @@ final class HostedSyncController: ObservableObject {
     @Published private(set) var deletingAssetID: String?
     @Published private(set) var changesCursor: String?
 
+    private let userDefaults: UserDefaults
+    private let recentChangesKey = "avphotos.hosted.recentChanges"
+    private let changesCursorKey = "avphotos.hosted.changesCursor"
+    private let maxStoredChanges = 10
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+
+        if let data = userDefaults.data(forKey: recentChangesKey),
+           let decoded = try? JSONDecoder().decode([HostedPhotoAsset].self, from: data) {
+            recentChanges = decoded
+        } else {
+            recentChanges = []
+        }
+
+        changesCursor = userDefaults.string(forKey: changesCursorKey)
+    }
+
     func refresh() async {
         guard let baseURL = AppConfig.avAppsAPIBaseURL else {
             hostedState = .notConfigured
@@ -25,6 +43,7 @@ final class HostedSyncController: ObservableObject {
             recentChanges = []
             changesCursor = nil
             lastRefreshedAt = nil
+            persistChangesState()
             return
         }
 
@@ -35,10 +54,11 @@ final class HostedSyncController: ObservableObject {
             authToken: AppConfig.isUsingSelfHostedOverride ? AppConfig.selfHostedAuthToken : nil
         )
         assets = result.assets
-        recentChanges = result.changes
+        recentChanges = mergedRecentChanges(current: recentChanges, incoming: result.changes)
         changesCursor = result.changesCursor
         hostedState = result.state
         lastRefreshedAt = result.lastRefreshedAt
+        persistChangesState()
     }
 
     func probeConnection(baseURL: URL, authToken: String?) async -> ProbeResult {
@@ -58,7 +78,7 @@ final class HostedSyncController: ObservableObject {
 
         do {
             let response = try await client.listAssets()
-            let changesResponse = try await client.listChanges()
+            let changesResponse = try await client.listChanges(cursor: changesCursor)
             return ProbeResult(
                 state: .ready(assetCount: response.assets.count),
                 assets: response.assets,
@@ -132,11 +152,11 @@ final class HostedSyncController: ObservableObject {
             ),
             at: 0
         )
-        if recentChanges.count > 10 {
-            recentChanges = Array(recentChanges.prefix(10))
-        }
+        recentChanges = Array(recentChanges.prefix(maxStoredChanges))
         hostedState = .ready(assetCount: assets.count)
         lastRefreshedAt = .now
+        changesCursor = recentChanges.first?.updatedAt ?? changesCursor
+        persistChangesState()
     }
 
     private func makeClient(baseURL: URL, authToken: String?) -> AVPhotosAPIClient {
@@ -147,6 +167,31 @@ final class HostedSyncController: ObservableObject {
                 try await SharedAccountService.getToken()
             }
         )
+    }
+
+    private func mergedRecentChanges(current: [HostedPhotoAsset], incoming: [HostedPhotoAsset]) -> [HostedPhotoAsset] {
+        var seen = Set<String>()
+        var merged: [HostedPhotoAsset] = []
+
+        for asset in (incoming + current) {
+            let key = "\(asset.assetId)|\(asset.updatedAt)|\(asset.syncStatus)"
+            guard seen.insert(key).inserted else { continue }
+            merged.append(asset)
+        }
+
+        merged.sort { lhs, rhs in
+            lhs.updatedAt > rhs.updatedAt
+        }
+
+        return Array(merged.prefix(maxStoredChanges))
+    }
+
+    private func persistChangesState() {
+        if let data = try? JSONEncoder().encode(recentChanges) {
+            userDefaults.set(data, forKey: recentChangesKey)
+        }
+
+        userDefaults.set(changesCursor, forKey: changesCursorKey)
     }
 }
 
