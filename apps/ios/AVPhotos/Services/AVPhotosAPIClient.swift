@@ -220,7 +220,7 @@ struct AVPhotosAPIClient: Sendable {
                 }
             }
 
-            throw AVPhotosAPIClientError.server("Unexpected server response: \(httpResponse.statusCode)")
+            throw AVPhotosAPIClientError.server("Unexpected server response: \(httpResponse.statusCode) (\(url.path))")
         }
 
         do {
@@ -264,7 +264,7 @@ struct AVPhotosAPIClient: Sendable {
                 }
             }
 
-            throw AVPhotosAPIClientError.server("Unexpected server response: \(httpResponse.statusCode)")
+            throw AVPhotosAPIClientError.server("Unexpected server response: \(httpResponse.statusCode) (\(url.path))")
         }
 
         return data

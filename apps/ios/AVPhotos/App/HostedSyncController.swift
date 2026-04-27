@@ -105,7 +105,7 @@ final class HostedSyncController: ObservableObject {
             _ = try await client.fetchHealth()
         } catch {
             return ProbeResult(
-                state: .failed(error.localizedDescription),
+                state: .failed("Health check failed: \(error.localizedDescription)"),
                 assets: [],
                 assetsCursor: nil,
                 totalAssetCount: 0,
@@ -116,8 +116,36 @@ final class HostedSyncController: ObservableObject {
         }
 
         do {
-            let response = try await client.listAssets(limit: assetPageSize)
-            let changesResponse = try await client.listChanges(cursor: changesCursor)
+            let response: HostedPhotoAssetListResponse
+            do {
+                response = try await client.listAssets(limit: assetPageSize)
+            } catch {
+                return ProbeResult(
+                    state: .failed("Asset listing failed: \(error.localizedDescription)"),
+                    assets: [],
+                    assetsCursor: nil,
+                    totalAssetCount: 0,
+                    changes: [],
+                    changesCursor: nil,
+                    lastRefreshedAt: nil
+                )
+            }
+
+            let changesResponse: HostedPhotoAssetChangesResponse
+            do {
+                changesResponse = try await client.listChanges(cursor: changesCursor)
+            } catch {
+                return ProbeResult(
+                    state: .failed("Change feed failed: \(error.localizedDescription)"),
+                    assets: response.assets,
+                    assetsCursor: response.cursor,
+                    totalAssetCount: response.totalCount,
+                    changes: [],
+                    changesCursor: changesCursor,
+                    lastRefreshedAt: nil
+                )
+            }
+
             return ProbeResult(
                 state: .ready(assetCount: response.totalCount),
                 assets: response.assets,
