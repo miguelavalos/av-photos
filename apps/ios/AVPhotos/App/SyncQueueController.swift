@@ -25,6 +25,22 @@ final class SyncQueueController: ObservableObject {
         }
     }
 
+    var pendingCount: Int {
+        items.filter { $0.status == .pending }.count
+    }
+
+    var activeCount: Int {
+        items.filter { [.preparing, .uploading, .committing].contains($0.status) }.count
+    }
+
+    var failedCount: Int {
+        items.filter { $0.status == .failed }.count
+    }
+
+    var completedCount: Int {
+        items.filter { $0.status == .completed }.count
+    }
+
     var deviceID: String {
         if let existing = userDefaults.string(forKey: deviceIDKey) {
             return existing
@@ -135,6 +151,21 @@ final class SyncQueueController: ObservableObject {
                 items[index].lastMessage = error.localizedDescription
             }
         }
+    }
+
+    func retryFailed() {
+        for index in items.indices where items[index].status == .failed {
+            items[index].status = .pending
+            items[index].lastMessage = nil
+            items[index].completedAt = nil
+        }
+
+        persist()
+    }
+
+    func clearCompleted() {
+        items.removeAll { $0.status == .completed }
+        persist()
     }
 
     private func updateAllPendingFailures(message: String) {
