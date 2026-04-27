@@ -89,6 +89,30 @@ struct HostedGalleryView: View {
                                 .buttonStyle(.plain)
                             }
                         }
+
+                        if filterMode != .deleted, let nextCursor = hostedSyncController.nextAssetsCursor, !nextCursor.isEmpty {
+                            Button {
+                                Task {
+                                    await hostedSyncController.loadMoreAssets()
+                                }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    if hostedSyncController.isLoadingMoreAssets {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    }
+
+                                    Text(
+                                        hostedSyncController.isLoadingMoreAssets
+                                            ? L10n.string("sync.hosted.loadingMore")
+                                            : L10n.string("sync.hosted.loadMore")
+                                    )
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(hostedSyncController.isLoadingMoreAssets)
+                        }
                     }
                 }
                 .padding(16)
@@ -202,7 +226,7 @@ struct HostedGalleryView: View {
 
             Spacer()
 
-            Text(L10n.string("sync.hosted.filteredCount", displayedAssets.count))
+            Text(filteredCountLabel)
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -412,6 +436,18 @@ struct HostedGalleryView: View {
         case .largest:
             "sync.hosted.sort.largest"
         }
+    }
+
+    private var filteredCountLabel: String {
+        if filterMode == .deleted {
+            return L10n.string("sync.hosted.filteredCount", displayedAssets.count)
+        }
+
+        return L10n.string(
+            "sync.hosted.filteredCountDetailed",
+            displayedAssets.count,
+            hostedSyncController.totalRemoteAssetCount
+        )
     }
 
     private func filterLabelKey(for mode: FilterMode) -> String {

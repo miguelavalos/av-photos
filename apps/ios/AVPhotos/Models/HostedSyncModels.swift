@@ -28,6 +28,8 @@ struct HostedPhotoAsset: Codable, Identifiable {
 
 struct HostedPhotoAssetListResponse: Codable {
     let assets: [HostedPhotoAsset]
+    let cursor: String?
+    let totalCount: Int
     let generatedAt: String
 }
 

@@ -160,6 +160,9 @@
 "sync.hosted.filter.deleted" = "Deleted";
 "sync.hosted.filter.uploaded" = "Uploaded";
 "sync.hosted.filteredCount" = "%d shown";
+"sync.hosted.filteredCountDetailed" = "%1$d shown of %2$d";
+"sync.hosted.loadMore" = "Load more";
+"sync.hosted.loadingMore" = "Loading more";
 "sync.hosted.refresh" = "Refresh hosted state";
 "sync.hosted.sort" = "Sort";
 "sync.hosted.sort.filename" = "Filename";

@@ -160,6 +160,9 @@
 "sync.hosted.filter.deleted" = "Borrados";
 "sync.hosted.filter.uploaded" = "Subidos";
 "sync.hosted.filteredCount" = "%d visibles";
+"sync.hosted.filteredCountDetailed" = "%1$d visibles de %2$d";
+"sync.hosted.loadMore" = "Cargar más";
+"sync.hosted.loadingMore" = "Cargando más";
 "sync.hosted.refresh" = "Actualizar estado hosted";
 "sync.hosted.sort" = "Ordenar";
 "sync.hosted.sort.filename" = "Nombre";

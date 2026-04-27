@@ -18,11 +18,15 @@ final class HostedSyncController: ObservableObject {
     @Published private(set) var lastRefreshedAt: Date?
     @Published private(set) var deletingAssetID: String?
     @Published private(set) var changesCursor: String?
+    @Published private(set) var nextAssetsCursor: String?
+    @Published private(set) var isLoadingMoreAssets = false
+    @Published private(set) var totalRemoteAssetCount = 0
 
     private let userDefaults: UserDefaults
     private let recentChangesKey = "avphotos.hosted.recentChanges"
     private let changesCursorKey = "avphotos.hosted.changesCursor"
     private let maxStoredChanges = 10
+    private let assetPageSize = 60
     private var previewImageCache: [String: UIImage] = [:]
 
     init(userDefaults: UserDefaults = .standard) {
@@ -44,6 +48,8 @@ final class HostedSyncController: ObservableObject {
             assets = []
             recentChanges = []
             changesCursor = nil
+            nextAssetsCursor = nil
+            totalRemoteAssetCount = 0
             lastRefreshedAt = nil
             persistChangesState()
             return
@@ -58,9 +64,38 @@ final class HostedSyncController: ObservableObject {
         assets = result.assets
         recentChanges = mergedRecentChanges(current: recentChanges, incoming: result.changes)
         changesCursor = result.changesCursor
+        nextAssetsCursor = result.assetsCursor
+        totalRemoteAssetCount = result.totalAssetCount
         hostedState = result.state
         lastRefreshedAt = result.lastRefreshedAt
         persistChangesState()
+    }
+
+    func loadMoreAssets() async {
+        guard let baseURL = AppConfig.avAppsAPIBaseURL, let cursor = nextAssetsCursor, !cursor.isEmpty else {
+            return
+        }
+
+        isLoadingMoreAssets = true
+        defer { isLoadingMoreAssets = false }
+
+        let client = makeClient(
+            baseURL: baseURL,
+            authToken: AppConfig.isUsingSelfHostedOverride ? AppConfig.selfHostedAuthToken : nil
+        )
+
+        do {
+            let response = try await client.listAssets(cursor: cursor, limit: assetPageSize)
+            var seen = Set(assets.map(\.assetId))
+            let appendedAssets = response.assets.filter { seen.insert($0.assetId).inserted }
+            assets.append(contentsOf: appendedAssets)
+            nextAssetsCursor = response.cursor
+            totalRemoteAssetCount = response.totalCount
+            hostedState = .ready(assetCount: totalRemoteAssetCount)
+            lastRefreshedAt = .now
+        } catch {
+            hostedState = .failed(error.localizedDescription)
+        }
     }
 
     func probeConnection(baseURL: URL, authToken: String?) async -> ProbeResult {
@@ -72,6 +107,8 @@ final class HostedSyncController: ObservableObject {
             return ProbeResult(
                 state: .failed(error.localizedDescription),
                 assets: [],
+                assetsCursor: nil,
+                totalAssetCount: 0,
                 changes: [],
                 changesCursor: nil,
                 lastRefreshedAt: nil
@@ -79,11 +116,13 @@ final class HostedSyncController: ObservableObject {
         }
 
         do {
-            let response = try await client.listAssets()
+            let response = try await client.listAssets(limit: assetPageSize)
             let changesResponse = try await client.listChanges(cursor: changesCursor)
             return ProbeResult(
-                state: .ready(assetCount: response.assets.count),
+                state: .ready(assetCount: response.totalCount),
                 assets: response.assets,
+                assetsCursor: response.cursor,
+                totalAssetCount: response.totalCount,
                 changes: changesResponse.changes,
                 changesCursor: changesResponse.cursor,
                 lastRefreshedAt: .now
@@ -91,13 +130,15 @@ final class HostedSyncController: ObservableObject {
         } catch let error as AVPhotosAPIClientError {
             switch error {
             case .authRequired:
-                return ProbeResult(state: .authRequired, assets: [], changes: [], changesCursor: nil, lastRefreshedAt: nil)
+                return ProbeResult(state: .authRequired, assets: [], assetsCursor: nil, totalAssetCount: 0, changes: [], changesCursor: nil, lastRefreshedAt: nil)
             case .forbidden(let message):
-                return ProbeResult(state: .forbidden(message), assets: [], changes: [], changesCursor: nil, lastRefreshedAt: nil)
+                return ProbeResult(state: .forbidden(message), assets: [], assetsCursor: nil, totalAssetCount: 0, changes: [], changesCursor: nil, lastRefreshedAt: nil)
             default:
                 return ProbeResult(
                     state: .failed(error.localizedDescription),
                     assets: [],
+                    assetsCursor: nil,
+                    totalAssetCount: 0,
                     changes: [],
                     changesCursor: nil,
                     lastRefreshedAt: nil
@@ -107,6 +148,8 @@ final class HostedSyncController: ObservableObject {
             return ProbeResult(
                 state: .failed(error.localizedDescription),
                 assets: [],
+                assetsCursor: nil,
+                totalAssetCount: 0,
                 changes: [],
                 changesCursor: nil,
                 lastRefreshedAt: nil
@@ -120,6 +163,8 @@ final class HostedSyncController: ObservableObject {
             assets = []
             recentChanges = []
             changesCursor = nil
+            nextAssetsCursor = nil
+            totalRemoteAssetCount = 0
             lastRefreshedAt = nil
             return
         }
@@ -156,7 +201,8 @@ final class HostedSyncController: ObservableObject {
             at: 0
         )
         recentChanges = Array(recentChanges.prefix(maxStoredChanges))
-        hostedState = .ready(assetCount: assets.count)
+        totalRemoteAssetCount = max(0, totalRemoteAssetCount - 1)
+        hostedState = .ready(assetCount: totalRemoteAssetCount)
         lastRefreshedAt = .now
         changesCursor = recentChanges.first?.updatedAt ?? changesCursor
         persistChangesState()
@@ -229,6 +275,8 @@ extension HostedSyncController {
     struct ProbeResult {
         let state: HostedState
         let assets: [HostedPhotoAsset]
+        let assetsCursor: String?
+        let totalAssetCount: Int
         let changes: [HostedPhotoAsset]
         let changesCursor: String?
         let lastRefreshedAt: Date?

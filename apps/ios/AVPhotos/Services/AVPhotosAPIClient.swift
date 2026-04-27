@@ -48,8 +48,21 @@ struct AVPhotosAPIClient: Sendable {
         try await request(path: "/health", method: "GET", requiresAuth: false)
     }
 
-    func listAssets() async throws -> HostedPhotoAssetListResponse {
-        try await request(path: "/v1/apps/avphotos/assets", method: "GET", requiresAuth: true)
+    func listAssets(cursor: String? = nil, limit: Int? = nil) async throws -> HostedPhotoAssetListResponse {
+        var components = URLComponents()
+        components.path = "/v1/apps/avphotos/assets"
+
+        var queryItems: [URLQueryItem] = []
+        if let cursor, !cursor.isEmpty {
+            queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+        }
+        if let limit {
+            queryItems.append(URLQueryItem(name: "limit", value: String(limit)))
+        }
+        components.queryItems = queryItems.isEmpty ? nil : queryItems
+
+        let path = components.string ?? "/v1/apps/avphotos/assets"
+        return try await request(path: path, method: "GET", requiresAuth: true)
     }
 
     func listChanges(cursor: String? = nil) async throws -> HostedPhotoAssetChangesResponse {
