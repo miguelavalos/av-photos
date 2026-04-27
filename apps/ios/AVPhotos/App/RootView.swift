@@ -38,7 +38,7 @@ struct RootView: View {
                     HostedGalleryView()
                         .tag(RootTab.remote)
                         .tabItem {
-                            Label(L10n.string("tab.remote"), systemImage: "rectangle.stack.fill.badge.photo")
+                            Label(L10n.string("tab.remote"), systemImage: "photo.stack.fill")
                         }
 
                     ProfileScreen(startSignInFlow: startSignInFlow)
