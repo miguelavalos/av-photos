@@ -23,7 +23,7 @@
 "auth.selfHosted.clear" = "Limpiar config self-hosted";
 "auth.selfHosted.save" = "Guardar config self-hosted";
 "auth.selfHosted.test" = "Probar conexión";
-"auth.selfHosted.test.authRequired" = "El backend responde, pero este endpoint necesita un token local para acceder a los assets.";
+"auth.selfHosted.test.authRequired" = "El backend responde, pero este endpoint necesita una sesión iniciada o un token del backend self-hosted para acceder a los assets.";
 "auth.selfHosted.test.checking" = "Comprobando alcance del backend y acceso a assets hosted.";
 "auth.selfHosted.test.success" = "Conexión correcta. El listado remoto ha devuelto %d assets.";
 "auth.selfHosted.token.hide" = "Ocultar";
@@ -39,7 +39,7 @@
 "auth.selfHosted.step1.detail" = "Despliega un backend que implemente los endpoints de AV Photos y pueda emitir destinos de upload y listados de assets.";
 "auth.selfHosted.step1.title" = "Levanta un backend compatible";
 "auth.selfHosted.step2.title" = "Define tu API base URL";
-"auth.selfHosted.step3.title" = "Define un token local";
+"auth.selfHosted.step3.title" = "Define un token del backend self-hosted";
 "auth.selfHosted.subtitle" = "Self-hosted debe seguir siendo una vía de primera clase. Por ahora el setup es explícito: apunta este cliente a tu backend y mantén disponible el staging local.";
 "auth.selfHosted.title" = "Setup self-hosted";
 "language.catalan" = "Catalán";
@@ -100,7 +100,7 @@
 "profile.preferences.theme.system" = "Sistema";
 "profile.preferences.theme.title" = "Apariencia";
 "profile.preferences.title" = "Preferencias";
-"profile.remote.authRequired" = "El sync hosted necesita un token local.";
+"profile.remote.authRequired" = "El sync hosted necesita sesión iniciada o un token del backend self-hosted.";
 "profile.remote.checking" = "Comprobando sync hosted";
 "profile.remote.failed" = "Falló la comprobación de sync hosted";
 "profile.remote.forbidden" = "El sync hosted está configurado pero esta cuenta no tiene entitlement.";
@@ -127,13 +127,13 @@
 "sync.flow.step2" = "Subir bytes al destino preparado";
 "sync.flow.step3" = "Confirmar metadatos y listar assets remotos";
 "sync.hosted.assets" = "Assets remotos";
-"sync.hosted.detail.authRequired" = "Define AVAPPS_AUTH_TOKEN localmente si quieres que este cliente público llame endpoints hosted autenticados durante desarrollo.";
+"sync.hosted.detail.authRequired" = "Inicia sesión con tu cuenta de avalsys o configura un token de backend self-hosted antes de llamar endpoints de sync autenticados.";
 "sync.hosted.detail.checking" = "La app está comprobando alcance del backend y acceso a assets remotos.";
 "sync.hosted.detail.notConfigured" = "Define AVPHOTOS_AVAPPS_API_BASE_URL en tu config local para apuntar a un backend hosted o self-hosted.";
 "sync.hosted.detail.ready" = "El backend responde y la app puede decodificar la lista remota de assets de AV Photos.";
 "sync.hosted.refresh" = "Actualizar estado hosted";
 "sync.hosted.section" = "Estado hosted";
-"sync.hosted.status.authRequired" = "El sync hosted necesita un token";
+"sync.hosted.status.authRequired" = "El sync hosted necesita sesión iniciada";
 "sync.hosted.status.checking" = "Comprobando sync hosted";
 "sync.hosted.status.failed" = "Falló la comprobación de sync hosted";
 "sync.hosted.status.forbidden" = "El sync hosted está configurado pero sin entitlement";

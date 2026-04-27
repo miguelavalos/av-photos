@@ -56,5 +56,3 @@ This repo now follows the standard avalsys bootstrap pattern:
 - `.env.schema` is the canonical client-config contract
 - `apps/ios/Config/Local.xcconfig` is generated locally through `varlock printenv`
 - no real tokens or hosted endpoints should be committed
-
-Optional one-off local overrides can still be passed as ambient env vars when generating the config, for example `AVAPPS_AUTH_TOKEN=... bun run ios:config`.

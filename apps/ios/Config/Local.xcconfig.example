@@ -1,6 +1,5 @@
 AVPHOTOS_BUNDLE_IDENTIFIER = com.example.avphotos.dev
 CLERK_PUBLISHABLE_KEY =
-AVAPPS_AUTH_TOKEN =
 AVPHOTOS_AVAPPS_API_BASE_URL = https://api.example.com
 AVPHOTOS_SUPPORT_EMAIL = support@example.com
 AVPHOTOS_ACCOUNT_MANAGEMENT_URL = https://example.com/account

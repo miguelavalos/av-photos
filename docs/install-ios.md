@@ -22,7 +22,6 @@ This guide covers the current local scaffold for `AV Photos` on iOS.
 5. Adjust `apps/ios/Config/Local.xcconfig` only if you intentionally want local overrides
    Optional:
    - set `AVPHOTOS_AVAPPS_API_BASE_URL` to a hosted or self-hosted backend
-   - set `AVAPPS_AUTH_TOKEN` to a local bearer token if you want to test authenticated hosted reads
 6. Generate the project:
    `xcodegen generate`
 7. Open `AVPhotos.xcodeproj`
@@ -47,7 +46,7 @@ The current app scaffold includes:
 - av-radio-aligned onboarding, continue-or-skip, language, and theme flows
 - real AV Apps account sign-in via Clerk
 - hosted backend reachability check
-- authenticated remote asset listing using the signed-in account session or a self-hosted token override
+- authenticated remote asset listing using the signed-in account session or an explicit self-hosted backend token
 
 It does not yet include:
 

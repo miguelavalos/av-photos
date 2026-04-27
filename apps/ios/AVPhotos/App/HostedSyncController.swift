@@ -25,7 +25,10 @@ final class HostedSyncController: ObservableObject {
 
         hostedState = .checking
 
-        let result = await probeConnection(baseURL: baseURL, authToken: AppConfig.authToken)
+        let result = await probeConnection(
+            baseURL: baseURL,
+            authToken: AppConfig.isUsingSelfHostedOverride ? AppConfig.selfHostedAuthToken : nil
+        )
         assets = result.assets
         hostedState = result.state
         lastRefreshedAt = result.lastRefreshedAt

@@ -13,7 +13,7 @@ enum AVPhotosAPIClientError: LocalizedError {
         case .notConfigured:
             "Hosted sync is not configured."
         case .authRequired:
-            "A local auth token is required to call hosted AV Photos endpoints."
+            "Sign in with your account or configure a self-hosted backend token before calling authenticated AV Photos endpoints."
         case .forbidden(let message):
             message
         case .server(let message):
@@ -34,7 +34,7 @@ struct AVPhotosAPIClient: Sendable {
 
     init(
         baseURL: URL = AppConfig.avAppsAPIBaseURL ?? URL(string: "http://127.0.0.1")!,
-        authToken: String? = AppConfig.authToken,
+        authToken: String? = AppConfig.selfHostedAuthToken,
         authTokenProvider: (@Sendable () async throws -> String?)? = nil,
         session: URLSession = .shared
     ) {

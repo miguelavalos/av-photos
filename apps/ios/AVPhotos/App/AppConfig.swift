@@ -16,13 +16,6 @@ enum AppConfig {
         return urlValue(for: "AVPHOTOS_AVAPPS_API_BASE_URL")
     }
 
-    static var authToken: String? {
-        if let overrideToken = nonEmptyOverrideValue(for: selfHostedAuthTokenKey) {
-            return overrideToken
-        }
-        return nonEmptyStringValue(for: "AVAPPS_AUTH_TOKEN")
-    }
-
     static var selfHostedBaseURLString: String? {
         nonEmptyOverrideValue(for: selfHostedBaseURLKey)
     }
@@ -63,10 +56,6 @@ enum AppConfig {
 
     static var isHostedSyncConfigured: Bool {
         avAppsAPIBaseURL != nil
-    }
-
-    static var isHostedAuthConfigured: Bool {
-        authToken != nil
     }
 
     static var isAVAppsAccountAvailable: Bool {

@@ -22,8 +22,6 @@
 	<string>1</string>
 	<key>CLERK_PUBLISHABLE_KEY</key>
 	<string>$(CLERK_PUBLISHABLE_KEY)</string>
-	<key>AVAPPS_AUTH_TOKEN</key>
-	<string>$(AVAPPS_AUTH_TOKEN)</string>
 	<key>AVPHOTOS_AVAPPS_API_BASE_URL</key>
 	<string>$(AVPHOTOS_AVAPPS_API_BASE_URL)</string>
 	<key>AVPHOTOS_SUPPORT_EMAIL</key>

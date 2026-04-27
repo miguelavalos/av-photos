@@ -69,7 +69,7 @@ final class SyncQueueController: ObservableObject {
 
         let client = AVPhotosAPIClient(
             baseURL: baseURL,
-            authToken: AppConfig.authToken,
+            authToken: AppConfig.isUsingSelfHostedOverride ? AppConfig.selfHostedAuthToken : nil,
             authTokenProvider: {
                 try await SharedAccountService.getToken()
             }

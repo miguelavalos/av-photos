@@ -72,9 +72,9 @@ struct SelfHostedSetupSheet: View {
                     HStack(spacing: 10) {
                         Group {
                             if isTokenVisible {
-                                TextField("AVAPPS_AUTH_TOKEN", text: $selfHostedConfigController.authToken)
+                                TextField("Bearer token (optional)", text: $selfHostedConfigController.authToken)
                             } else {
-                                SecureField("AVAPPS_AUTH_TOKEN", text: $selfHostedConfigController.authToken)
+                                SecureField("Bearer token (optional)", text: $selfHostedConfigController.authToken)
                             }
                         }
                         .textInputAutocapitalization(.never)
