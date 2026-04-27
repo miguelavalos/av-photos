@@ -5,6 +5,7 @@ struct RootView: View {
     @State private var authOptionsArePresented = false
     @State private var automaticGuestOnboardingIsPresented = false
     @State private var isShowingAccountOnboarding = false
+    @State private var selectedTab: RootTab = .library
 
     var body: some View {
         Group {
@@ -21,18 +22,21 @@ struct RootView: View {
                     }
                 )
             } else {
-                TabView {
+                TabView(selection: $selectedTab) {
                     LibrarySelectionView()
+                        .tag(RootTab.library)
                         .tabItem {
                             Label(L10n.string("tab.library"), systemImage: "photo.on.rectangle")
                         }
 
                     SyncQueueView()
+                        .tag(RootTab.sync)
                         .tabItem {
                             Label(L10n.string("tab.sync"), systemImage: "arrow.triangle.2.circlepath")
                         }
 
                     ProfileScreen(startSignInFlow: startSignInFlow)
+                        .tag(RootTab.profile)
                         .tabItem {
                             Label(L10n.string("tab.profile"), systemImage: "person.crop.circle")
                         }
@@ -73,12 +77,14 @@ struct RootView: View {
         try await accessController.signInWithApple()
         automaticGuestOnboardingIsPresented = false
         isShowingAccountOnboarding = false
+        selectedTab = .sync
     }
 
     private func startGoogleSignIn() async throws {
         try await accessController.signInWithGoogle()
         automaticGuestOnboardingIsPresented = false
         isShowingAccountOnboarding = false
+        selectedTab = .sync
     }
 
     private func presentAutomaticGuestOnboardingIfNeeded() {
@@ -97,4 +103,10 @@ struct RootView: View {
         accessController.markGuestOnboardingPromptShown()
         automaticGuestOnboardingIsPresented = true
     }
+}
+
+private enum RootTab {
+    case library
+    case sync
+    case profile
 }

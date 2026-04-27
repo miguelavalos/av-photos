@@ -10,6 +10,7 @@ struct AuthOnboardingView: View {
     @State private var activeProvider: AuthProvider?
     @State private var errorMessage = ""
     @State private var isShowingError = false
+    @State private var isShowingSelfHostedSetup = false
     @GestureState private var authOptionsDragOffset: CGFloat = 0
 
     var body: some View {
@@ -45,6 +46,7 @@ struct AuthOnboardingView: View {
                             activeProvider: activeProvider,
                             onAppleTap: startAppleSignIn,
                             onGoogleTap: startGoogleSignIn,
+                            onSelfHostedTap: { isShowingSelfHostedSetup = true },
                             onSkip: onSkip
                         )
                         .padding(.horizontal, 14)
@@ -78,6 +80,11 @@ struct AuthOnboardingView: View {
             Button(L10n.string("auth.alert.close"), role: .cancel) {}
         } message: {
             Text(errorMessage)
+        }
+        .sheet(isPresented: $isShowingSelfHostedSetup) {
+            SelfHostedSetupSheet(onContinue: onSkip)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -297,6 +304,7 @@ private struct AuthOptionsPanel: View {
     let activeProvider: AuthProvider?
     let onAppleTap: () -> Void
     let onGoogleTap: () -> Void
+    let onSelfHostedTap: () -> Void
     let onSkip: () -> Void
 
     var body: some View {
@@ -309,6 +317,13 @@ private struct AuthOptionsPanel: View {
             Text(L10n.string("auth.options.title"))
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(AVPhotosTheme.textInverse)
+
+            ProductLaneCard(
+                title: L10n.string("auth.path.hosted.title"),
+                detail: L10n.string("auth.path.hosted.detail"),
+                buttonTitle: L10n.string("auth.path.hosted.cta"),
+                action: {}
+            )
 
             VStack(spacing: 12) {
                 ProviderButton(
@@ -327,14 +342,24 @@ private struct AuthOptionsPanel: View {
             }
             .disabled(!accountIsAvailable)
 
+            ProductLaneCard(
+                title: L10n.string("auth.path.selfHosted.title"),
+                detail: L10n.string("auth.path.selfHosted.detail"),
+                buttonTitle: L10n.string("auth.path.selfHosted.cta"),
+                action: onSelfHostedTap
+            )
+
+            ProductLaneCard(
+                title: L10n.string("auth.path.local.title"),
+                detail: L10n.string("auth.path.local.detail"),
+                buttonTitle: L10n.string("auth.path.local.cta"),
+                action: onSkip
+            )
+
             Text(L10n.string("auth.options.detail"))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(AVPhotosTheme.textInverse.opacity(0.7))
                 .multilineTextAlignment(.center)
-
-            Button(L10n.string("auth.options.skip"), action: onSkip)
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(AVPhotosTheme.textInverse.opacity(0.88))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 18)
@@ -377,6 +402,133 @@ private struct ProviderButton: View {
             .background(AVPhotosTheme.highlight, in: Capsule())
         }
         .disabled(isLoading)
+    }
+}
+
+private struct ProductLaneCard: View {
+    let title: String
+    let detail: String
+    let buttonTitle: String
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(AVPhotosTheme.textInverse)
+
+            Text(detail)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(AVPhotosTheme.textInverse.opacity(0.76))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button(action: action) {
+                Text(buttonTitle)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(AVPhotosTheme.brandBlack)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(AVPhotosTheme.highlight, in: Capsule())
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                }
+        )
+    }
+}
+
+private struct SelfHostedSetupSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let onContinue: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.string("auth.selfHosted.title"))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(AVPhotosTheme.textPrimary)
+
+                    Text(L10n.string("auth.selfHosted.subtitle"))
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(AVPhotosTheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                setupStep(
+                    number: "1",
+                    title: L10n.string("auth.selfHosted.step1.title"),
+                    detail: L10n.string("auth.selfHosted.step1.detail")
+                )
+                setupStep(
+                    number: "2",
+                    title: L10n.string("auth.selfHosted.step2.title"),
+                    detail: "AVPHOTOS_AVAPPS_API_BASE_URL"
+                )
+                setupStep(
+                    number: "3",
+                    title: L10n.string("auth.selfHosted.step3.title"),
+                    detail: "AVPHOTOS_AUTH_TOKEN"
+                )
+
+                Text(L10n.string("auth.selfHosted.footer"))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(AVPhotosTheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    dismiss()
+                    onContinue()
+                } label: {
+                    Text(L10n.string("auth.selfHosted.continue"))
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(AVPhotosTheme.brandBlack)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(AVPhotosTheme.highlight, in: Capsule())
+                }
+            }
+            .padding(24)
+        }
+        .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
+    }
+
+    private func setupStep(number: String, title: String, detail: String) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Text(number)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(AVPhotosTheme.brandBlack)
+                .frame(width: 28, height: 28)
+                .background(AVPhotosTheme.highlight, in: Circle())
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(AVPhotosTheme.textPrimary)
+
+                Text(detail)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(AVPhotosTheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(AVPhotosTheme.cardSurface)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(AVPhotosTheme.borderSubtle, lineWidth: 1)
+                }
+        )
     }
 }
 
