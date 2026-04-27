@@ -22,10 +22,12 @@ final class SyncQueueController: ObservableObject {
 
         if let data = userDefaults.data(forKey: queueKey),
            let decoded = try? JSONDecoder().decode([SyncQueueItem].self, from: data) {
-            self.items = decoded
+            self.items = Self.compacted(decoded)
         } else {
             self.items = []
         }
+
+        persist()
     }
 
     var pendingCount: Int {
@@ -69,7 +71,7 @@ final class SyncQueueController: ObservableObject {
 
     func enqueue(_ assets: [LocalPhotoAsset]) {
         for asset in assets {
-            guard !items.contains(where: { $0.localIdentifier == asset.localIdentifier && $0.status != .completed }) else {
+            guard !items.contains(where: { $0.localIdentifier == asset.localIdentifier }) else {
                 continue
             }
 
@@ -272,6 +274,48 @@ final class SyncQueueController: ObservableObject {
         default:
             2000
         }
+    }
+
+    private static func compacted(_ items: [SyncQueueItem]) -> [SyncQueueItem] {
+        let grouped = Dictionary(grouping: items, by: \.localIdentifier)
+
+        return grouped.values
+            .compactMap { group in
+                group.min(by: isPreferred(_:over:))
+            }
+            .sorted { $0.createdAt < $1.createdAt }
+    }
+
+    private static func isPreferred(_ lhs: SyncQueueItem, over rhs: SyncQueueItem) -> Bool {
+        let lhsPriority = statusPriority(lhs.status)
+        let rhsPriority = statusPriority(rhs.status)
+
+        if lhsPriority != rhsPriority {
+            return lhsPriority < rhsPriority
+        }
+
+        return comparisonDate(for: lhs) < comparisonDate(for: rhs)
+    }
+
+    private static func statusPriority(_ status: SyncQueueItemStatus) -> Int {
+        switch status {
+        case .completed:
+            return 0
+        case .committing:
+            return 1
+        case .uploading:
+            return 2
+        case .preparing:
+            return 3
+        case .failed:
+            return 4
+        case .pending:
+            return 5
+        }
+    }
+
+    private static func comparisonDate(for item: SyncQueueItem) -> Date {
+        item.completedAt ?? item.lastAttemptAt ?? item.createdAt
     }
 }
 
