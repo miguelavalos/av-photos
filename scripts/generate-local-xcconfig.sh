@@ -40,6 +40,9 @@ xcodebuild_url_value() {
 
 clerk_publishable_key="$(printenv_value CLERK_PUBLISHABLE_KEY)"
 avapps_api_base_url="$(printenv_value AVAPPS_API_BASE_URL)"
+if [ -z "${avapps_api_base_url:-}" ] && [ "$profile" = "local" ]; then
+  avapps_api_base_url="http://127.0.0.1:8788"
+fi
 support_email="$(printenv_value AVPHOTOS_SUPPORT_EMAIL)"
 account_management_url="$(printenv_value AVPHOTOS_ACCOUNT_MANAGEMENT_URL)"
 terms_url="$(printenv_value AVPHOTOS_TERMS_URL)"
