@@ -20,11 +20,14 @@ Hosted upload and end-to-end real sync validation are still follow-up work.
 
 ## Local setup
 
-1. Generate `Config/Local.xcconfig` from Infisical:
-   `../../scripts/generate-local-xcconfig.sh local`
-2. Generate the Xcode project:
+1. Install repo tooling from the repo root:
+   `bun install`
+2. Create `.infisical/bootstrap.env` from `.infisical/bootstrap.env.example`
+3. Generate `Config/Local.xcconfig` from the repo root:
+   `bun run ios:config`
+4. Generate the Xcode project:
    `xcodegen generate`
-3. Open `AVPhotos.xcodeproj` in Xcode.
+5. Open `AVPhotos.xcodeproj` in Xcode.
 
 ## Planned next work
 
