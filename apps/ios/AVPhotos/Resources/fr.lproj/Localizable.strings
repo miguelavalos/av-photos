@@ -172,6 +172,7 @@
 "sync.queue.summary.title" = "Queue overview";
 "sync.queue.sync" = "Sync pending items";
 "sync.queue.syncing" = "Syncing...";
+"time.now" = "à l’instant";
 "tab.library" = "Library";
 "tab.profile" = "Profile";
 "tab.sync" = "Sync";

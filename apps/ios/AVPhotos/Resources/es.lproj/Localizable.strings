@@ -172,6 +172,7 @@
 "sync.queue.summary.title" = "Resumen de cola";
 "sync.queue.sync" = "Sincronizar pendientes";
 "sync.queue.syncing" = "Sincronizando...";
+"time.now" = "ahora";
 "tab.library" = "Library";
 "tab.profile" = "Perfil";
 "tab.sync" = "Sync";

@@ -364,9 +364,15 @@ struct SyncQueueView: View {
     }
 
     private func relativeDate(_ date: Date) -> String {
+        let now = Date()
+        if date >= now || abs(date.timeIntervalSince(now)) < 1 {
+            return L10n.string("time.now")
+        }
+
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
-        return formatter.localizedString(for: date, relativeTo: .now)
+        let clampedDate = date > now ? now : date
+        return formatter.localizedString(for: clampedDate, relativeTo: now)
     }
 
     private func changeLabel(for asset: HostedPhotoAsset) -> String {
