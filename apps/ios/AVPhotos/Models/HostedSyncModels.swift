@@ -29,6 +29,40 @@ struct HostedPhotoAssetListResponse: Decodable {
     let generatedAt: String
 }
 
+struct PreparedUploadRequest: Encodable {
+    let deviceId: String
+    let sourceLocalIdentifier: String
+    let originalFilename: String
+    let mediaType: String
+    let captureTakenAt: String?
+    let byteSize: Int
+    let pixelWidth: Int
+    let pixelHeight: Int
+    let sha256: String
+}
+
+struct PreparedUploadResponse: Decodable {
+    let assetId: String
+    let uploadJobId: String?
+    let uploadToken: String?
+    let uploadUrl: String
+    let storageKey: String
+    let shouldUpload: Bool
+    let assetAlreadyExists: Bool
+    let preparedAt: String
+}
+
+struct CommitUploadRequest: Encodable {
+    let assetId: String
+    let uploadToken: String
+    let deviceId: String
+}
+
+struct CommitUploadResponse: Decodable {
+    let asset: HostedPhotoAsset
+    let committedAt: String
+}
+
 struct HostedErrorResponse: Decodable {
     struct ErrorPayload: Decodable {
         let code: String

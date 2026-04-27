@@ -46,10 +46,73 @@ struct AVPhotosAPIClient {
         try await request(path: "/v1/apps/avphotos/assets", method: "GET", requiresAuth: true)
     }
 
+    func prepareUpload(
+        deviceID: String,
+        localIdentifier: String,
+        filename: String,
+        captureTakenAt: String?,
+        byteSize: Int,
+        pixelWidth: Int,
+        pixelHeight: Int,
+        sha256: String
+    ) async throws -> PreparedUploadResponse {
+        try await request(
+            path: "/v1/apps/avphotos/assets/prepare-upload",
+            method: "POST",
+            requiresAuth: true,
+            body: PreparedUploadRequest(
+                deviceId: deviceID,
+                sourceLocalIdentifier: localIdentifier,
+                originalFilename: filename,
+                mediaType: "image",
+                captureTakenAt: captureTakenAt,
+                byteSize: byteSize,
+                pixelWidth: pixelWidth,
+                pixelHeight: pixelHeight,
+                sha256: sha256
+            )
+        )
+    }
+
+    func uploadPreparedAsset(uploadURLPath: String, data: Data) async throws {
+        struct EmptyResponse: Decodable {}
+
+        let _: EmptyResponse = try await request(
+            path: uploadURLPath,
+            method: "PUT",
+            requiresAuth: true,
+            bodyData: data,
+            contentType: "application/octet-stream"
+        )
+    }
+
+    func commitUpload(
+        assetID: String,
+        uploadToken: String?,
+        deviceID: String
+    ) async throws -> CommitUploadResponse {
+        guard let uploadToken, !uploadToken.isEmpty else {
+            throw AVPhotosAPIClientError.server("Upload token is missing for commit.")
+        }
+
+        return try await request(
+            path: "/v1/apps/avphotos/assets/commit-upload",
+            method: "POST",
+            requiresAuth: true,
+            body: CommitUploadRequest(
+                assetId: assetID,
+                uploadToken: uploadToken,
+                deviceId: deviceID
+            )
+        )
+    }
+
     private func request<T: Decodable>(
         path: String,
         method: String,
-        requiresAuth: Bool
+        requiresAuth: Bool,
+        bodyData: Data? = nil,
+        contentType: String? = nil
     ) async throws -> T {
         guard let url = URL(string: path, relativeTo: baseURL) else {
             throw AVPhotosAPIClientError.notConfigured
@@ -57,6 +120,7 @@ struct AVPhotosAPIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
+        request.httpBody = bodyData
 
         if requiresAuth {
             guard let authToken, !authToken.isEmpty else {
@@ -64,6 +128,10 @@ struct AVPhotosAPIClient {
             }
 
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        if let contentType {
+            request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         }
 
         let (data, response) = try await session.data(for: request)
@@ -92,5 +160,22 @@ struct AVPhotosAPIClient {
         } catch {
             throw AVPhotosAPIClientError.invalidResponse
         }
+    }
+
+    private func request<T: Decodable, Body: Encodable>(
+        path: String,
+        method: String,
+        requiresAuth: Bool,
+        body: Body
+    ) async throws -> T {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(body)
+        return try await request(
+            path: path,
+            method: method,
+            requiresAuth: requiresAuth,
+            bodyData: data,
+            contentType: "application/json"
+        )
     }
 }

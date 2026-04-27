@@ -2,16 +2,44 @@ import SwiftUI
 
 struct SyncQueueView: View {
     @EnvironmentObject private var hostedSyncController: HostedSyncController
+    @EnvironmentObject private var syncQueueController: SyncQueueController
 
     var body: some View {
         NavigationStack {
             List {
                 Section("Queue") {
-                    ContentUnavailableView(
-                        "No Pending Uploads",
-                        systemImage: "tray",
-                        description: Text("The real queue will appear here once local asset selection and upload orchestration are wired.")
-                    )
+                    if syncQueueController.items.isEmpty {
+                        ContentUnavailableView(
+                            "No Pending Uploads",
+                            systemImage: "tray",
+                            description: Text("Select local photos in the Library tab and add them to the queue.")
+                        )
+                    } else {
+                        ForEach(syncQueueController.items) { item in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.filename)
+                                    .font(.headline)
+                                Text(item.status.rawValue)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                if let lastMessage = item.lastMessage {
+                                    Text(lastMessage)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+
+                        Button(syncQueueController.isSyncing ? "Syncing..." : "Sync Pending Items") {
+                            Task {
+                                await syncQueueController.syncPending()
+                                await hostedSyncController.refresh()
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(syncQueueController.isSyncing)
+                    }
                 }
 
                 Section("Hosted Status") {
