@@ -208,7 +208,7 @@ struct HostedGalleryDetailSheet: View {
                                 .tag(asset.assetId)
                         }
                     }
-                    .frame(height: 280)
+                    .frame(height: 420)
                     .tabViewStyle(.page(indexDisplayMode: .automatic))
 
                     VStack(alignment: .leading, spacing: 8) {
@@ -257,13 +257,15 @@ struct HostedGalleryDetailSheet: View {
                 .padding(16)
             }
             .scrollContentBackground(.hidden)
-            .background(AVPhotosTheme.shellBackground.ignoresSafeArea())
+            .background(Color.black.ignoresSafeArea())
             .navigationTitle(L10n.string("sync.hosted.gallery.title"))
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: selectedAssetID) { _, newValue in
                 guard let nextAsset = assets.first(where: { $0.assetId == newValue }) else { return }
                 onSelect(nextAsset)
             }
+            .toolbarBackground(Color.black, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(L10n.string("action.done")) {
@@ -287,8 +289,96 @@ struct HostedAssetHeroView: View {
     let asset: HostedPhotoAsset
 
     var body: some View {
-        HostedAssetThumbnailView(asset: asset, size: 280, cornerRadius: 28)
+        ZoomableHostedAssetView(asset: asset)
             .frame(maxWidth: .infinity)
+    }
+}
+
+private struct ZoomableHostedAssetView: View {
+    let asset: HostedPhotoAsset
+
+    @State private var scale: CGFloat = 1
+    @State private var lastScale: CGFloat = 1
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(Color.black)
+
+                HostedAssetThumbnailView(asset: asset, size: max(proxy.size.width, proxy.size.height), cornerRadius: 28)
+                    .scaleEffect(scale)
+                    .offset(offset)
+                    .gesture(dragGesture)
+                    .simultaneousGesture(magnificationGesture)
+                    .simultaneousGesture(doubleTapGesture)
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
+            .onChange(of: asset.assetId) { _, _ in
+                resetTransform()
+            }
+        }
+    }
+
+    private var magnificationGesture: some Gesture {
+        MagnifyGesture()
+            .onChanged { value in
+                let nextScale = lastScale * value.magnification
+                scale = min(max(nextScale, 1), 4)
+                if scale <= 1.01 {
+                    offset = .zero
+                }
+            }
+            .onEnded { _ in
+                lastScale = scale
+                if scale <= 1.01 {
+                    resetTransform()
+                }
+            }
+    }
+
+    private var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                guard scale > 1 else { return }
+                offset = CGSize(
+                    width: lastOffset.width + value.translation.width,
+                    height: lastOffset.height + value.translation.height
+                )
+            }
+            .onEnded { _ in
+                guard scale > 1 else {
+                    resetTransform()
+                    return
+                }
+                lastOffset = offset
+            }
+    }
+
+    private var doubleTapGesture: some Gesture {
+        TapGesture(count: 2)
+            .onEnded {
+                if scale > 1 {
+                    resetTransform()
+                } else {
+                    scale = 2
+                    lastScale = 2
+                }
+            }
+    }
+
+    private func resetTransform() {
+        scale = 1
+        lastScale = 1
+        offset = .zero
+        lastOffset = .zero
     }
 }
 
