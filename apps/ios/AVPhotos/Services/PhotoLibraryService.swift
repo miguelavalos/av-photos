@@ -1,6 +1,7 @@
 import CryptoKit
 import Foundation
 import Photos
+import UIKit
 
 struct LocalPhotoUploadPayload {
     let asset: LocalPhotoAsset
@@ -72,6 +73,36 @@ struct PhotoLibraryService {
             captureTakenAt: asset.creationDate.map(Self.isoString),
             sha256: Self.sha256Hex(for: data)
         )
+    }
+
+    func requestThumbnail(for localIdentifier: String, targetSize: CGSize) async throws -> UIImage {
+        let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
+        guard let asset = fetchResult.firstObject else {
+            throw PhotoLibraryServiceError.assetNotFound
+        }
+
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<UIImage, Error>) in
+            let options = PHImageRequestOptions()
+            options.deliveryMode = .highQualityFormat
+            options.resizeMode = .fast
+            options.isNetworkAccessAllowed = true
+
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: targetSize,
+                contentMode: .aspectFill,
+                options: options
+            ) { image, info in
+                if let error = info?[PHImageErrorKey] as? Error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                if let image {
+                    continuation.resume(returning: image)
+                }
+            }
+        }
     }
 
     private func requestOriginalImageData(for asset: PHAsset) async throws -> Data {

@@ -1,15 +1,18 @@
 import Foundation
 import Photos
+import UIKit
 
 @MainActor
 final class LocalLibraryController: ObservableObject {
     @Published private(set) var recentAssets: [LocalPhotoAsset] = []
     @Published private(set) var selectedAssetIDs: Set<String>
     @Published private(set) var isLoading = false
+    @Published private var thumbnails: [String: UIImage] = [:]
 
     private let service: PhotoLibraryService
     private let userDefaults: UserDefaults
     private let selectionKey = "avphotos.selectedAssetIDs"
+    private let thumbnailSize = CGSize(width: 240, height: 240)
 
     init(
         service: PhotoLibraryService = PhotoLibraryService(),
@@ -43,6 +46,26 @@ final class LocalLibraryController: ObservableObject {
         }
 
         persistSelection()
+    }
+
+    func thumbnail(for asset: LocalPhotoAsset) -> UIImage? {
+        thumbnails[asset.localIdentifier]
+    }
+
+    func loadThumbnailIfNeeded(for asset: LocalPhotoAsset) async {
+        guard thumbnails[asset.localIdentifier] == nil else {
+            return
+        }
+
+        do {
+            let image = try await service.requestThumbnail(
+                for: asset.localIdentifier,
+                targetSize: thumbnailSize
+            )
+            thumbnails[asset.localIdentifier] = image
+        } catch {
+            return
+        }
     }
 
     private func persistSelection() {

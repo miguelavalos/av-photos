@@ -18,6 +18,8 @@ struct LibrarySelectionView: View {
     @State private var searchQuery = ""
     @State private var sortMode: SortMode = .newest
 
+    private let thumbnailSize: CGFloat = 68
+
     var body: some View {
         NavigationStack {
             List {
@@ -75,6 +77,8 @@ struct LibrarySelectionView: View {
                                     localLibraryController.toggleSelection(for: asset)
                                 } label: {
                                     HStack(spacing: 12) {
+                                        LocalAssetThumbnailView(asset: asset, size: thumbnailSize)
+
                                         Image(systemName: localLibraryController.selectedAssetIDs.contains(asset.localIdentifier) ? "checkmark.circle.fill" : "circle")
                                             .foregroundStyle(localLibraryController.selectedAssetIDs.contains(asset.localIdentifier) ? .green : .secondary)
 
@@ -112,12 +116,16 @@ struct LibrarySelectionView: View {
     }
 
     private func assetRow(_ asset: LocalPhotoAsset) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(asset.filename)
-                .font(.headline)
-            Text(assetSubtitle(for: asset))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            LocalAssetThumbnailView(asset: asset, size: thumbnailSize)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(asset.filename)
+                    .font(.headline)
+                Text(assetSubtitle(for: asset))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -190,6 +198,43 @@ struct LibrarySelectionView: View {
             "library.sort.filename"
         case .largest:
             "library.sort.largest"
+        }
+    }
+}
+
+private struct LocalAssetThumbnailView: View {
+    @EnvironmentObject private var localLibraryController: LocalLibraryController
+
+    let asset: LocalPhotoAsset
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(AVPhotosTheme.cardSurface)
+
+            if let image = localLibraryController.thumbnail(for: asset) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                VStack(spacing: 6) {
+                    Image(systemName: "photo")
+                        .font(.title3)
+                    Text("\(asset.pixelWidth)x\(asset.pixelHeight)")
+                        .font(.caption2)
+                }
+                .foregroundStyle(.secondary)
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(AVPhotosTheme.borderSubtle.opacity(0.45), lineWidth: 1)
+        )
+        .task {
+            await localLibraryController.loadThumbnailIfNeeded(for: asset)
         }
     }
 }
