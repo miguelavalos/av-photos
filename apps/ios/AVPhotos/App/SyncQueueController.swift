@@ -4,11 +4,13 @@ import Foundation
 final class SyncQueueController: ObservableObject {
     @Published private(set) var items: [SyncQueueItem]
     @Published private(set) var isSyncing = false
+    @Published private(set) var lastRunSummary: SyncRunSummary?
 
     private let userDefaults: UserDefaults
     private let queueKey = "avphotos.syncQueue"
     private let deviceIDKey = "avphotos.deviceID"
     private let photoLibraryService: PhotoLibraryService
+    private let maxAttemptCount = 3
 
     init(
         userDefaults: UserDefaults = .standard,
@@ -92,65 +94,38 @@ final class SyncQueueController: ObservableObject {
         )
 
         isSyncing = true
+        lastRunSummary = nil
         defer {
             isSyncing = false
             persist()
         }
+
+        var syncedCount = 0
+        var skippedCount = 0
+        var failedCount = 0
 
         for index in items.indices {
             if items[index].status == .completed {
                 continue
             }
 
-            do {
-                items[index].attemptCount = (items[index].attemptCount ?? 0) + 1
-                items[index].lastAttemptAt = .now
-                items[index].completedAt = nil
-                items[index].status = .preparing
-                items[index].lastMessage = "Loading local asset metadata"
-
-                let payload = try await photoLibraryService.fetchUploadPayload(for: items[index].localIdentifier)
-                let prepare = try await client.prepareUpload(
-                    deviceID: deviceID,
-                    localIdentifier: payload.asset.localIdentifier,
-                    filename: payload.asset.filename,
-                    captureTakenAt: payload.captureTakenAt,
-                    byteSize: payload.data.count,
-                    pixelWidth: payload.asset.pixelWidth,
-                    pixelHeight: payload.asset.pixelHeight,
-                    sha256: payload.sha256
-                )
-
-                items[index].remoteAssetId = prepare.assetId
-
-                if prepare.shouldUpload {
-                    items[index].status = .uploading
-                    items[index].lastMessage = "Uploading bytes"
-                    try await client.uploadPreparedAsset(uploadURLPath: prepare.uploadUrl, data: payload.data)
-
-                    items[index].status = .committing
-                    items[index].lastMessage = "Committing remote metadata"
-                    _ = try await client.commitUpload(
-                        assetID: prepare.assetId,
-                        uploadToken: prepare.uploadToken,
-                        deviceID: deviceID
-                    )
-                } else {
-                    items[index].lastMessage = prepare.assetAlreadyExists
-                        ? "Remote asset already exists"
-                        : "Upload was skipped by the backend"
-                }
-
-                items[index].status = .completed
-                if prepare.shouldUpload {
-                    items[index].lastMessage = "Sync completed"
-                }
-                items[index].completedAt = .now
-            } catch {
-                items[index].status = .failed
-                items[index].lastMessage = error.localizedDescription
+            let result = await syncItem(at: index, with: client)
+            switch result {
+            case .synced:
+                syncedCount += 1
+            case .skipped:
+                skippedCount += 1
+            case .failed:
+                failedCount += 1
             }
         }
+
+        lastRunSummary = SyncRunSummary(
+            syncedCount: syncedCount,
+            skippedCount: skippedCount,
+            failedCount: failedCount,
+            finishedAt: .now
+        )
     }
 
     func retryFailed() {
@@ -168,6 +143,77 @@ final class SyncQueueController: ObservableObject {
         persist()
     }
 
+    private func syncItem(at index: Int, with client: AVPhotosAPIClient) async -> SyncOutcome {
+        for attempt in 1 ... maxAttemptCount {
+            do {
+                items[index].attemptCount = attempt
+                items[index].lastAttemptAt = .now
+                items[index].completedAt = nil
+                items[index].status = .preparing
+                items[index].lastMessage = attempt == 1
+                    ? "Loading local asset metadata"
+                    : "Retrying upload preparation"
+
+                let payload = try await photoLibraryService.fetchUploadPayload(for: items[index].localIdentifier)
+                let prepare = try await client.prepareUpload(
+                    deviceID: deviceID,
+                    localIdentifier: payload.asset.localIdentifier,
+                    filename: payload.asset.filename,
+                    captureTakenAt: payload.captureTakenAt,
+                    byteSize: payload.data.count,
+                    pixelWidth: payload.asset.pixelWidth,
+                    pixelHeight: payload.asset.pixelHeight,
+                    sha256: payload.sha256
+                )
+
+                items[index].remoteAssetId = prepare.assetId
+
+                if prepare.shouldUpload {
+                    items[index].status = .uploading
+                    items[index].lastMessage = attempt == 1
+                        ? "Uploading bytes"
+                        : "Retrying byte upload"
+                    try await client.uploadPreparedAsset(uploadURLPath: prepare.uploadUrl, data: payload.data)
+
+                    items[index].status = .committing
+                    items[index].lastMessage = "Committing remote metadata"
+                    _ = try await client.commitUpload(
+                        assetID: prepare.assetId,
+                        uploadToken: prepare.uploadToken,
+                        deviceID: deviceID
+                    )
+                } else {
+                    items[index].lastMessage = prepare.assetAlreadyExists
+                        ? "Remote asset already exists"
+                        : "Upload was skipped by the backend"
+                }
+
+                items[index].status = .completed
+                items[index].lastMessage = prepare.shouldUpload
+                    ? "Sync completed"
+                    : items[index].lastMessage
+                items[index].completedAt = .now
+                return prepare.shouldUpload ? .synced : .skipped
+            } catch {
+                if shouldRetry(error) && attempt < maxAttemptCount {
+                    items[index].status = .pending
+                    items[index].lastMessage = "Transient error. Retrying shortly."
+                    persist()
+                    try? await Task.sleep(for: .milliseconds(backoffMilliseconds(for: attempt)))
+                    continue
+                }
+
+                items[index].status = .failed
+                items[index].lastMessage = error.localizedDescription
+                return .failed
+            }
+        }
+
+        items[index].status = .failed
+        items[index].lastMessage = "Sync failed after multiple attempts."
+        return .failed
+    }
+
     private func updateAllPendingFailures(message: String) {
         for index in items.indices where items[index].status != .completed {
             items[index].status = .failed
@@ -181,5 +227,48 @@ final class SyncQueueController: ObservableObject {
         if let data = try? JSONEncoder().encode(items) {
             userDefaults.set(data, forKey: queueKey)
         }
+    }
+
+    private func shouldRetry(_ error: Error) -> Bool {
+        if let apiError = error as? AVPhotosAPIClientError {
+            switch apiError {
+            case .authRequired, .forbidden, .invalidUploadTarget, .notConfigured:
+                return false
+            case .server, .invalidResponse:
+                return true
+            }
+        }
+
+        if error is URLError {
+            return true
+        }
+
+        return false
+    }
+
+    private func backoffMilliseconds(for attempt: Int) -> Int {
+        switch attempt {
+        case 1:
+            700
+        case 2:
+            1400
+        default:
+            2000
+        }
+    }
+}
+
+extension SyncQueueController {
+    struct SyncRunSummary: Equatable {
+        let syncedCount: Int
+        let skippedCount: Int
+        let failedCount: Int
+        let finishedAt: Date
+    }
+
+    private enum SyncOutcome {
+        case synced
+        case skipped
+        case failed
     }
 }

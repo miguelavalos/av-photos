@@ -18,6 +18,10 @@ struct SyncQueueView: View {
                     } else {
                         queueSummary
 
+                        if let summary = syncQueueController.lastRunSummary {
+                            lastRunSummaryView(summary)
+                        }
+
                         ForEach(syncQueueController.items) { item in
                             queueRow(for: item)
                         }
@@ -193,6 +197,29 @@ struct SyncQueueView: View {
                 )
             }
             .font(.caption)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func lastRunSummaryView(_ summary: SyncQueueController.SyncRunSummary) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(L10n.string("sync.queue.lastRun.title"))
+                .font(.headline)
+
+            Text(
+                L10n.string(
+                    "sync.queue.lastRun.summary",
+                    summary.syncedCount,
+                    summary.skippedCount,
+                    summary.failedCount
+                )
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+            Text(relativeDate(summary.finishedAt))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
         .padding(.vertical, 6)
     }
