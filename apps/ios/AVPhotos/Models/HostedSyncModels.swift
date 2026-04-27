@@ -30,6 +30,12 @@ struct HostedPhotoAssetListResponse: Decodable {
     let generatedAt: String
 }
 
+struct HostedPhotoAssetChangesResponse: Decodable {
+    let changes: [HostedPhotoAsset]
+    let cursor: String?
+    let generatedAt: String
+}
+
 struct PreparedUploadRequest: Encodable {
     let deviceId: String
     let sourceLocalIdentifier: String

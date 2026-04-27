@@ -128,6 +128,9 @@
 "sync.flow.step2" = "Subir bytes al destino preparado";
 "sync.flow.step3" = "Confirmar metadatos y listar assets remotos";
 "sync.hosted.assets" = "Assets remotos";
+"sync.hosted.change.deleted" = "Borrado";
+"sync.hosted.change.ready" = "Subido";
+"sync.hosted.changes" = "Cambios hosted recientes";
 "sync.hosted.delete" = "Borrar";
 "sync.hosted.delete.confirm.message" = "¿Borrar %@ del storage hosted remoto? El asset local se mantiene en el dispositivo.";
 "sync.hosted.delete.confirm.title" = "Borrar asset remoto";

@@ -97,6 +97,29 @@ struct SyncQueueView: View {
                     }
                 }
 
+                if !hostedSyncController.recentChanges.isEmpty {
+                    Section(L10n.string("sync.hosted.changes")) {
+                        ForEach(hostedSyncController.recentChanges.prefix(10)) { asset in
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(alignment: .firstTextBaseline) {
+                                    Text(asset.originalFilename)
+                                        .font(.headline)
+
+                                    Spacer(minLength: 12)
+
+                                    Text(changeLabel(for: asset))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(changeColor(for: asset))
+                                }
+
+                                Text(relativeDate(changeDate(for: asset)))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
                 Section(L10n.string("sync.flow.section")) {
                     Label(L10n.string("sync.flow.step1"), systemImage: "1.circle")
                     Label(L10n.string("sync.flow.step2"), systemImage: "2.circle")
@@ -313,6 +336,27 @@ struct SyncQueueView: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
         return formatter.localizedString(for: date, relativeTo: .now)
+    }
+
+    private func changeLabel(for asset: HostedPhotoAsset) -> String {
+        asset.syncStatus == "deleted"
+            ? L10n.string("sync.hosted.change.deleted")
+            : L10n.string("sync.hosted.change.ready")
+    }
+
+    private func changeColor(for asset: HostedPhotoAsset) -> Color {
+        asset.syncStatus == "deleted" ? AVPhotosTheme.warning : AVPhotosTheme.highlight
+    }
+
+    private func changeDate(for asset: HostedPhotoAsset) -> Date {
+        let formatter = ISO8601DateFormatter()
+        if asset.syncStatus == "deleted",
+           let deletedAt = asset.deletedAt,
+           let date = formatter.date(from: deletedAt) {
+            return date
+        }
+
+        return formatter.date(from: asset.updatedAt) ?? .now
     }
 
     private var deleteAlertPresentedBinding: Binding<Bool> {

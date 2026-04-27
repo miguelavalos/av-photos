@@ -52,6 +52,17 @@ struct AVPhotosAPIClient: Sendable {
         try await request(path: "/v1/apps/avphotos/assets", method: "GET", requiresAuth: true)
     }
 
+    func listChanges(cursor: String? = nil) async throws -> HostedPhotoAssetChangesResponse {
+        let path: String
+        if let cursor, let encodedCursor = cursor.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            path = "/v1/apps/avphotos/assets/changes?cursor=\(encodedCursor)"
+        } else {
+            path = "/v1/apps/avphotos/assets/changes"
+        }
+
+        return try await request(path: path, method: "GET", requiresAuth: true)
+    }
+
     func prepareUpload(
         deviceID: String,
         localIdentifier: String,
