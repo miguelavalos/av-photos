@@ -56,3 +56,9 @@ This repo now follows the standard avalsys bootstrap pattern:
 - `.env.schema` is the canonical client-config contract
 - `apps/ios/Config/Local.xcconfig` is generated locally through `varlock printenv`
 - no real tokens or hosted endpoints should be committed
+
+## Third-Party Services
+
+- AV Photos can operate against an avalsys-hosted backend path or a user-supplied self-hosted endpoint.
+- The hosted sync design references Cloudflare R2-backed object storage in the current architecture.
+- Optional signed-in flows depend on AV Apps account infrastructure outside this public repo.
