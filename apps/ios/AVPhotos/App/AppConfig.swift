@@ -20,7 +20,7 @@ enum AppConfig {
         if let overrideToken = nonEmptyOverrideValue(for: selfHostedAuthTokenKey) {
             return overrideToken
         }
-        return nonEmptyStringValue(for: "AVPHOTOS_AUTH_TOKEN")
+        return nonEmptyStringValue(for: "AVAPPS_AUTH_TOKEN")
     }
 
     static var selfHostedBaseURLString: String? {

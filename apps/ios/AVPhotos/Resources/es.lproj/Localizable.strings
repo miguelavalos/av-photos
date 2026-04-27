@@ -127,7 +127,7 @@
 "sync.flow.step2" = "Subir bytes al destino preparado";
 "sync.flow.step3" = "Confirmar metadatos y listar assets remotos";
 "sync.hosted.assets" = "Assets remotos";
-"sync.hosted.detail.authRequired" = "Define AVPHOTOS_AUTH_TOKEN localmente si quieres que este cliente público llame endpoints hosted autenticados durante desarrollo.";
+"sync.hosted.detail.authRequired" = "Define AVAPPS_AUTH_TOKEN localmente si quieres que este cliente público llame endpoints hosted autenticados durante desarrollo.";
 "sync.hosted.detail.checking" = "La app está comprobando alcance del backend y acceso a assets remotos.";
 "sync.hosted.detail.notConfigured" = "Define AVPHOTOS_AVAPPS_API_BASE_URL en tu config local para apuntar a un backend hosted o self-hosted.";
 "sync.hosted.detail.ready" = "El backend responde y la app puede decodificar la lista remota de assets de AV Photos.";

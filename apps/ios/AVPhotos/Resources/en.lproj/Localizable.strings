@@ -127,7 +127,7 @@
 "sync.flow.step2" = "Upload bytes to the prepared target";
 "sync.flow.step3" = "Commit metadata and list remote assets";
 "sync.hosted.assets" = "Remote assets";
-"sync.hosted.detail.authRequired" = "Set AVPHOTOS_AUTH_TOKEN locally if you want this public client to call authenticated hosted endpoints during development.";
+"sync.hosted.detail.authRequired" = "Set AVAPPS_AUTH_TOKEN locally if you want this public client to call authenticated hosted endpoints during development.";
 "sync.hosted.detail.checking" = "The app is checking backend reachability and remote asset access.";
 "sync.hosted.detail.notConfigured" = "Set AVPHOTOS_AVAPPS_API_BASE_URL in your local config to point the app at a hosted or self-hosted backend.";
 "sync.hosted.detail.ready" = "The backend is reachable and the app can decode the remote AV Photos asset list.";

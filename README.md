@@ -36,19 +36,25 @@ docs/
 
 ## Local iOS setup
 
-1. Resolve the local iOS config from Infisical:
-   `./scripts/generate-local-xcconfig.sh local`
-2. Go to `apps/ios`
-3. Generate the Xcode project:
+1. Install repo tooling:
+   `bun install`
+2. Create the shared Infisical bootstrap:
+   `cp .infisical/bootstrap.env.example .infisical/bootstrap.env`
+3. Resolve the local iOS config through Varlock + Infisical:
+   `bun run ios:config`
+4. Go to `apps/ios`
+5. Generate the Xcode project:
    `xcodegen generate`
-4. Open `AVPhotos.xcodeproj` in Xcode and run the `AVPhotos` scheme
+6. Open `AVPhotos.xcodeproj` in Xcode and run the `AVPhotos` scheme
 
 ## Local secrets
 
-This repo follows the same local secret handling as `av-radio` for iOS builds:
+This repo now follows the standard avalsys bootstrap pattern:
 
-- `apps/ios/Config/Local.xcconfig` is generated locally from `infisical`
-- `.infisical/` stays out of git
+- `.infisical/bootstrap.env.example` is the committed template
+- `.infisical/bootstrap.env` stays local-only and feeds `scripts/resolve-infisical-bootstrap-env.sh`
+- `.env.schema` is the canonical client-config contract
+- `apps/ios/Config/Local.xcconfig` is generated locally through `varlock printenv`
 - no real tokens or hosted endpoints should be committed
 
-`varlock` is not wired here yet because this public repo currently ships only the native iOS client. If `av-photos` later adds a public web app or worker package, that part should follow the standard avalsys `varlock` + `infisical` baseline.
+Optional one-off local overrides can still be passed as ambient env vars when generating the config, for example `AVAPPS_AUTH_TOKEN=... bun run ios:config`.

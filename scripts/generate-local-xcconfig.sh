@@ -38,7 +38,7 @@ xcodebuild_url_value() {
 }
 
 clerk_publishable_key="$(printenv_value CLERK_PUBLISHABLE_KEY)"
-avphotos_auth_token="$(printenv_value AVPHOTOS_AUTH_TOKEN)"
+avapps_auth_token="$(printenv_value AVAPPS_AUTH_TOKEN)"
 avapps_api_base_url="$(printenv_value AVPHOTOS_AVAPPS_API_BASE_URL)"
 support_email="$(printenv_value AVPHOTOS_SUPPORT_EMAIL)"
 account_management_url="$(printenv_value AVPHOTOS_ACCOUNT_MANAGEMENT_URL)"
@@ -53,7 +53,7 @@ fi
 rendered_config="$(cat <<EOF
 AVPHOTOS_BUNDLE_IDENTIFIER = $bundle_identifier
 CLERK_PUBLISHABLE_KEY = $clerk_publishable_key
-AVPHOTOS_AUTH_TOKEN = ${avphotos_auth_token:-}
+AVAPPS_AUTH_TOKEN = ${avapps_auth_token:-}
 AVPHOTOS_AVAPPS_API_BASE_URL = ${avapps_api_base_url:-}
 AVPHOTOS_SUPPORT_EMAIL = ${support_email:-}
 AVPHOTOS_ACCOUNT_MANAGEMENT_URL = $(xcodebuild_url_value "${account_management_url:-}")
