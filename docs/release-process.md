@@ -17,3 +17,5 @@ Initial release rules:
 - do not commit private infrastructure values
 - keep hosted and self-hosted behavior explicit in docs
 - keep the first public release scoped to iOS and selective sync
+- generate production config through Infisical with `bun run ios:config:production`
+- run the tracked-file secret scan from `docs/private-config-and-infisical.md` before push

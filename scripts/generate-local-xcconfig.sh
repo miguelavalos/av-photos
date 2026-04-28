@@ -40,6 +40,9 @@ xcodebuild_url_value() {
 
 clerk_publishable_key="$(printenv_value CLERK_PUBLISHABLE_KEY)"
 avapps_api_base_url="$(printenv_value AVAPPS_API_BASE_URL)"
+if [ -z "${avapps_api_base_url:-}" ]; then
+  avapps_api_base_url="$(printenv_value AVPHOTOS_AVAPPS_API_BASE_URL)"
+fi
 if [ -z "${avapps_api_base_url:-}" ] && [ "$profile" = "local" ]; then
   avapps_api_base_url="http://127.0.0.1:8788"
 fi
@@ -51,6 +54,24 @@ open_source_url="$(printenv_value AVPHOTOS_OPEN_SOURCE_URL)"
 
 if [ -z "${open_source_url:-}" ]; then
   open_source_url="https://github.com/miguelavalos/av-photos"
+fi
+
+if [ "$profile" = "production" ]; then
+  required_values=(
+    clerk_publishable_key
+    avapps_api_base_url
+    support_email
+    account_management_url
+    terms_url
+    privacy_url
+  )
+
+  for value_name in "${required_values[@]}"; do
+    if [ -z "${!value_name:-}" ]; then
+      echo "Missing required production value from Infisical: $value_name" >&2
+      exit 1
+    fi
+  done
 fi
 
 rendered_config="$(cat <<EOF

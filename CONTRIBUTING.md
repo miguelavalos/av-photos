@@ -21,6 +21,7 @@ Please avoid proposing changes that depend on non-public services or credentials
 2. Make sure the app still builds locally.
 3. Update docs if setup or behavior changes.
 4. Do not commit local config, secrets, signing material, or build artifacts.
+5. Follow [Private Config And Infisical](docs/private-config-and-infisical.md) for all login, Pro, hosted backend, signing, and release config.
 
 ## Pull Requests
 
