@@ -1,8 +1,0 @@
-AVPHOTOS_BUNDLE_IDENTIFIER = com.example.avphotos.dev
-AVAPPS_ACCOUNT_PUBLISHABLE_KEY =
-AVAPPS_API_BASE_URL = https:/$()/api.example.com
-AVPHOTOS_SUPPORT_EMAIL = support@example.com
-AVPHOTOS_ACCOUNT_MANAGEMENT_URL = https://example.com/account
-AVPHOTOS_TERMS_URL = https://example.com/terms
-AVPHOTOS_PRIVACY_URL = https://example.com/privacy
-AVPHOTOS_OPEN_SOURCE_URL = https://github.com/miguelavalos/av-photos
