@@ -1,8 +1,8 @@
 # AV Photos Release Process
 
-This document is a placeholder for the future public release process of `AV Photos`.
+This document defines the public release checks for `AV Photos`.
 
-The intended release topics are:
+Release topics:
 
 - public repo release preparation
 - config and environment validation
