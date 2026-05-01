@@ -2,12 +2,12 @@
 
 Open-source native photo sync client for `AV Photos`.
 
-This repository is planned as the public home for an `iOS-first` app that syncs user-selected photos to Cloudflare R2 through an optional backend.
+This repository is planned as the public home for an `iOS-first` app that syncs user-selected photos to Cloudflare R2 through AV Apps backend services.
 
 ## Intended product shape
 
 - native SwiftUI iOS app first
-- optional account connection
+- AV Apps Account connection
 - local-first selection and queueing
 - hosted sync for `Pro` users
 - self-hosted compatibility for users who do not want to use the avalsys-hosted backend
@@ -38,8 +38,7 @@ docs/
 
 1. Install repo tooling:
    `bun install`
-2. Create the shared Infisical bootstrap:
-   `cp .infisical/bootstrap.env.example .infisical/bootstrap.env`
+2. Create the local Infisical bootstrap at `.infisical/bootstrap.env`.
 3. Resolve the local iOS config through Varlock + Infisical:
    `bun run ios:config`
 4. Go to `apps/ios`
@@ -51,7 +50,6 @@ docs/
 
 This repo now follows the standard avalsys bootstrap pattern:
 
-- `.infisical/bootstrap.env.example` is the committed template
 - `.infisical/bootstrap.env` stays local-only and feeds `scripts/resolve-infisical-bootstrap-env.sh`
 - `.env.schema` is the canonical client-config contract
 - `apps/ios/Config/Local.xcconfig` is generated locally through `varlock printenv`
@@ -61,4 +59,4 @@ This repo now follows the standard avalsys bootstrap pattern:
 
 - AV Photos can operate against an avalsys-hosted backend path or a user-supplied self-hosted endpoint.
 - The hosted sync design references Cloudflare R2-backed object storage in the current architecture.
-- Optional signed-in flows depend on AV Apps account infrastructure outside this public repo.
+- Signed-in flows depend on AV Apps account infrastructure outside this public repo.

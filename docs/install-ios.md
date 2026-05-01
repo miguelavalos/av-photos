@@ -14,14 +14,12 @@ This guide covers the current local scaffold for `AV Photos` on iOS.
 
 1. From the repo root, install dependencies:
    `bun install`
-2. Create your local bootstrap file:
-   `cp .infisical/bootstrap.env.example .infisical/bootstrap.env`
+2. Create your local bootstrap file at `.infisical/bootstrap.env`.
 3. Generate the local config:
    `bun run ios:config`
 4. Open `public/av-photos/apps/ios`
 5. Adjust `apps/ios/Config/Local.xcconfig` only if you intentionally want local overrides
-   Optional:
-   - set `AVAPPS_API_BASE_URL` to a hosted or self-hosted backend
+   Set `AVAPPS_API_BASE_URL` to the AV Apps backend for the selected profile.
 6. Generate the project:
    `xcodegen generate`
 7. Open `AVPhotos.xcodeproj`

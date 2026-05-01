@@ -3,7 +3,6 @@
 DerivedData
 *.log
 .infisical/*
-!.infisical/bootstrap.env.example
 
 !apps/ios/
 !apps/ios/**

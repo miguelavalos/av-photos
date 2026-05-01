@@ -22,7 +22,7 @@ Hosted upload and end-to-end real sync validation are still follow-up work.
 
 1. Install repo tooling from the repo root:
    `bun install`
-2. Create `.infisical/bootstrap.env` from `.infisical/bootstrap.env.example`
+2. Create `.infisical/bootstrap.env` locally
 3. Generate `Config/Local.xcconfig` from the repo root:
    `bun run ios:config`
 4. Generate the Xcode project:

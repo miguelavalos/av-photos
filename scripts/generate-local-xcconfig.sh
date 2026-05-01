@@ -56,23 +56,21 @@ if [ -z "${open_source_url:-}" ]; then
   open_source_url="https://github.com/miguelavalos/av-photos"
 fi
 
-if [ "$profile" = "production" ]; then
-  required_values=(
-    account_publishable_key
-    avapps_api_base_url
-    support_email
-    account_management_url
-    terms_url
-    privacy_url
-  )
+required_values=(
+  account_publishable_key
+  avapps_api_base_url
+  support_email
+  account_management_url
+  terms_url
+  privacy_url
+)
 
-  for value_name in "${required_values[@]}"; do
-    if [ -z "${!value_name:-}" ]; then
-      echo "Missing required production value from Infisical: $value_name" >&2
-      exit 1
-    fi
-  done
-fi
+for value_name in "${required_values[@]}"; do
+  if [ -z "${!value_name:-}" ]; then
+    echo "Missing required value from Infisical: $value_name" >&2
+    exit 1
+  fi
+done
 
 rendered_config="$(cat <<EOF
 AVPHOTOS_BUNDLE_IDENTIFIER = $bundle_identifier

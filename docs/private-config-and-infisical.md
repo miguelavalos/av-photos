@@ -16,7 +16,6 @@ Local development:
 
 ```bash
 bun install
-cp .infisical/bootstrap.env.example .infisical/bootstrap.env
 bun run ios:config
 ```
 
