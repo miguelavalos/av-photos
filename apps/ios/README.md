@@ -4,7 +4,7 @@ Native SwiftUI iOS app for `AV Photos`.
 
 ## Current scope
 
-This app scaffold establishes:
+This app foundation establishes:
 
 - native SwiftUI project structure
 - local config pattern

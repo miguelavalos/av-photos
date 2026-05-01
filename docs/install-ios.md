@@ -1,6 +1,6 @@
 # AV Photos iOS Installation
 
-This guide covers the current local scaffold for `AV Photos` on iOS.
+This guide covers the current local iOS app foundation for `AV Photos`.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ bun run ios:config:production
 
 ## Current scope
 
-The current app scaffold includes:
+The current app foundation includes:
 
 - SwiftUI shell
 - photo-library permission flow

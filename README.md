@@ -14,7 +14,7 @@ This repository is planned as the public home for an `iOS-first` app that syncs 
 
 ## Current state
 
-This repository now includes the initial native iOS scaffold under `apps/ios`.
+This repository now includes the native SwiftUI iOS app foundation under `apps/ios`.
 
 Public roadmap and setup docs live in:
 
