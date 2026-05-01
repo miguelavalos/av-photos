@@ -11,7 +11,7 @@ This app scaffold establishes:
 - photo-library permission flow
 - product shell for library, sync queue, and account tabs
 - onboarding flow with continue or skip
-- real AV Apps account wiring via Clerk
+- real AV Apps account wiring through the configured account provider
 - profile flow with language and theme preferences
 - hosted backend reachability check
 - authenticated remote asset listing using either a self-hosted token override or the signed-in account session
