@@ -45,7 +45,10 @@ The current app foundation includes:
 - real AV Apps account sign-in through the configured account provider
 - hosted backend reachability check
 - authenticated remote asset listing using the signed-in account session or an explicit self-hosted backend token
+- persistent local sync queue
+- foreground hosted upload flow through `prepare-upload`, byte upload, and `commit-upload`
 
-It does not yet include:
+It still needs:
 
-- hosted upload integration
+- end-to-end hosted upload validation with a real Pro account
+- duplicate-upload and background-sync hardening

@@ -14,7 +14,7 @@ This repository is planned as the public home for an `iOS-first` app that syncs 
 
 ## Current state
 
-This repository now includes the native SwiftUI iOS app foundation under `apps/ios`.
+This repository now includes the native SwiftUI iOS app under `apps/ios`, including local selection, persistent sync queueing, hosted/self-hosted API configuration, remote asset listing, and the foreground hosted upload path.
 
 Public roadmap and setup docs live in:
 
@@ -24,7 +24,7 @@ Public roadmap and setup docs live in:
 
 Internal avalsys planning may exist elsewhere, but this public repository should remain understandable on its own.
 
-## Planned repository shape
+## Repository shape
 
 ```text
 apps/

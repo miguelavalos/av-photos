@@ -6,15 +6,17 @@ This repository tracks the public client for `AV Photos`.
 
 - native SwiftUI iOS app
 - photo-library permission flow
-- local-first shell
-- preparation for hosted and self-hosted sync modes
+- local-first shell and persistent sync queue
+- hosted and self-hosted API configuration
+- authenticated remote asset listing
+- foreground `prepare-upload -> byte upload -> commit-upload` flow
 
 ## Near-term work
 
-1. Wire the iOS client to the hosted upload flow
-2. Persist the local sync queue
-3. Render uploaded remote assets in the app
-4. Harden retry, delete, and account-isolation behavior
+1. Validate hosted upload end to end with a real Pro account and real selected photo.
+2. Harden retry, delete, duplicate-upload, and account-isolation behavior.
+3. Improve sync progress and post-upload remote list refresh.
+4. Decide background upload boundaries after foreground sync is reliable.
 
 ## Product boundaries for v1
 

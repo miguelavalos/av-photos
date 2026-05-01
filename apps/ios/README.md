@@ -15,8 +15,10 @@ This app foundation establishes:
 - profile flow with language and theme preferences
 - hosted backend reachability check
 - authenticated remote asset listing using either a self-hosted token override or the signed-in account session
+- persistent local sync queue
+- foreground hosted upload flow through `prepare-upload`, byte upload, and `commit-upload`
 
-Hosted upload and end-to-end real sync validation are still follow-up work.
+End-to-end real sync validation with a Pro account is still follow-up work.
 
 ## Local setup
 
@@ -31,6 +33,6 @@ Hosted upload and end-to-end real sync validation are still follow-up work.
 
 ## Planned next work
 
-- connect `prepare-upload`, upload, and `commit-upload`
 - validate end-to-end hosted sync with a real backend
+- harden duplicate-upload, delete, retry, and post-upload list refresh behavior
 - refine account entitlements and Pro gating
