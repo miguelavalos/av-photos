@@ -8,7 +8,7 @@ This guide covers the current local scaffold for `AV Photos` on iOS.
 2. `xcodegen` installed locally
 3. `bun` 1.3.13 or later
 4. A local `.infisical/bootstrap.env`
-5. A local `Config/Local.xcconfig` generated through Varlock, including `AVAPPS_ACCOUNT_PUBLISHABLE_KEY` or the legacy `CLERK_PUBLISHABLE_KEY` alias
+5. A local `Config/Local.xcconfig` generated through Varlock, including `AVAPPS_ACCOUNT_PUBLISHABLE_KEY`
 
 ## Setup
 
