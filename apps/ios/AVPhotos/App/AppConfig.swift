@@ -6,7 +6,7 @@ enum AppConfig {
     private static let selfHostedAuthTokenKey = "avphotos.selfHosted.authToken"
 
     static var avAppsAccountKey: String {
-        stringValue(for: "CLERK_PUBLISHABLE_KEY")
+        nonEmptyStringValue(for: "AVAPPS_ACCOUNT_PUBLISHABLE_KEY") ?? stringValue(for: "CLERK_PUBLISHABLE_KEY")
     }
 
     static var avAppsAPIBaseURL: URL? {
