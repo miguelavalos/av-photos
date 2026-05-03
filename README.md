@@ -1,5 +1,13 @@
 # AV Photos
 
+> Migrated: AV Photos has moved to **AV Photosys**.
+>
+> Active repository: https://github.com/miguelavalos/av-photosys
+>
+> Active product site: https://av-photosys.avalsys.com
+>
+> This repository is kept only for historical reference. New work should happen in `av-photosys`.
+
 Open-source native photo sync client for `AV Photos`.
 
 This repository is planned as the public home for an `iOS-first` app that syncs user-selected photos to Cloudflare R2 through AV Apps backend services.
